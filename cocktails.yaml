@@ -1,0 +1,25 @@
+cocktails:
+  - name: Don Beachcomber
+    image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
+    ingredients:
+      - name: White Rum
+        qty: 45
+      - name: Triple Sec
+        qty: 20
+      - name: Lime Juice
+        qty: 15
+      - name: Maraschino
+        qty: 5
+      - name: Simple Syrup
+        qty: 5
+  - name: Basil Smash
+    image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+    ingredients:
+      - name: Gin
+        qty: 45
+      - name: Lime Juice
+        qty: 20
+      - name: Simple Syrup
+        qty: 15
+      - name: Green Basil
+        qty: 15 leaves
