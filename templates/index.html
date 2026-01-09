@@ -151,6 +151,20 @@
             font-size: 1.2rem;
         }
 
+        .alcohol-group {
+            margin-bottom: 30px;
+        }
+
+        .alcohol-header {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+            padding-bottom: 8px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
         @media (max-width: 480px) {
             h1 {
                 font-size: 2rem;
@@ -176,31 +190,36 @@
     <div class="container">
         <h1>🍹 Cocktail Menu</h1>
         
-        {% if cocktails %}
-        <div class="cocktail-list">
-            {% for cocktail in cocktails %}
-            <div class="cocktail-card {% if not cocktail.get('enabled', True) %}disabled{% endif %}" data-cocktail-name="{{ cocktail.name }}">
-                <div class="cocktail-content">
-                    <h2 class="cocktail-name">
-                        {{ cocktail.name }}
-                        {% if not cocktail.get('enabled', True) %}
-                        <span class="unavailable-badge">Unavailable</span>
+        {% if grouped_cocktails %}
+            {% for alcohol, cocktails in grouped_cocktails %}
+            <div class="alcohol-group">
+                <h2 class="alcohol-header">{{ alcohol }}</h2>
+                <div class="cocktail-list">
+                    {% for cocktail in cocktails %}
+                    <div class="cocktail-card {% if not cocktail.get('enabled', True) %}disabled{% endif %}" data-cocktail-name="{{ cocktail.name }}">
+                        <div class="cocktail-content">
+                            <h2 class="cocktail-name">
+                                {{ cocktail.name }}
+                                {% if not cocktail.get('enabled', True) %}
+                                <span class="unavailable-badge">Unavailable</span>
+                                {% endif %}
+                            </h2>
+                            <ul class="ingredients-list">
+                                {% for ingredient in cocktail.ingredients %}
+                                <li class="ingredient-item">{{ ingredient.name }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% if cocktail.image %}
+                        <img src="{{ cocktail.image }}" alt="{{ cocktail.name }}" class="cocktail-image" loading="lazy">
+                        {% else %}
+                        <div class="cocktail-image"></div>
                         {% endif %}
-                    </h2>
-                    <ul class="ingredients-list">
-                        {% for ingredient in cocktail.ingredients %}
-                        <li class="ingredient-item">{{ ingredient.name }}</li>
-                        {% endfor %}
-                    </ul>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% if cocktail.image %}
-                <img src="{{ cocktail.image }}" alt="{{ cocktail.name }}" class="cocktail-image" loading="lazy">
-                {% else %}
-                <div class="cocktail-image"></div>
-                {% endif %}
             </div>
             {% endfor %}
-        </div>
         {% else %}
         <div class="empty-state">
             <p>No cocktails available at the moment.</p>

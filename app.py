@@ -87,6 +87,58 @@ def get_all_ingredients():
     return sorted(list(ingredients))
 
 
+def get_main_alcohol(cocktail):
+    """Identify the main alcohol for a cocktail based on ingredients."""
+    # Common alcohol keywords
+    alcohol_keywords = ['rum', 'gin', 'vodka', 'whiskey', 'whisky', 'tequila', 'brandy', 
+                        'cognac', 'bourbon', 'scotch', 'rye', 'mezcal', 'pisco', 'cachaça']
+    
+    # Find alcoholic ingredients (those containing alcohol keywords)
+    alcoholic_ingredients = []
+    for ingredient in cocktail.get('ingredients', []):
+        ingredient_name_lower = ingredient['name'].lower()
+        for keyword in alcohol_keywords:
+            if keyword in ingredient_name_lower:
+                # Try to get quantity as number (handle cases like "15 leaves")
+                qty = ingredient.get('qty', 0)
+                try:
+                    qty_num = int(str(qty).split()[0])  # Get first number if it's "15 leaves"
+                except (ValueError, AttributeError):
+                    qty_num = 0
+                alcoholic_ingredients.append((ingredient['name'], qty_num))
+                break
+    
+    if not alcoholic_ingredients:
+        return 'Other'
+    
+    # Sort by quantity (descending) and return the one with highest quantity
+    alcoholic_ingredients.sort(key=lambda x: x[1], reverse=True)
+    return alcoholic_ingredients[0][0]
+
+
+def group_cocktails_by_alcohol(cocktails):
+    """Group cocktails by main alcohol and sort them."""
+    # Group cocktails by main alcohol
+    grouped = {}
+    for cocktail in cocktails:
+        main_alcohol = get_main_alcohol(cocktail)
+        if main_alcohol not in grouped:
+            grouped[main_alcohol] = []
+        grouped[main_alcohol].append(cocktail)
+    
+    # Sort within each group: enabled first (alphabetically), then disabled (alphabetically)
+    for alcohol in grouped:
+        grouped[alcohol].sort(key=lambda c: (
+            not c.get('enabled', True),  # Enabled first (False < True)
+            c['name'].lower()  # Then alphabetically
+        ))
+    
+    # Sort alcohol groups alphabetically
+    sorted_groups = sorted(grouped.items(), key=lambda x: x[0])
+    
+    return sorted_groups
+
+
 def compute_cocktail_enabled(cocktail, ingredients_state, cocktail_overrides):
     """Compute if a cocktail should be enabled based on ingredients and overrides."""
     cocktail_name = cocktail['name']
@@ -152,8 +204,9 @@ def health():
 def index():
     """Display the main cocktail menu page."""
     cocktails = load_cocktails()
-    # Show all cocktails, enabled and disabled
-    return render_template('index.html', cocktails=cocktails)
+    # Group cocktails by main alcohol
+    grouped_cocktails = group_cocktails_by_alcohol(cocktails)
+    return render_template('index.html', grouped_cocktails=grouped_cocktails)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -181,10 +234,12 @@ def logout():
 def admin():
     """Display the admin page to manage cocktails and ingredients."""
     cocktails = load_cocktails()
+    # Group cocktails by main alcohol
+    grouped_cocktails = group_cocktails_by_alcohol(cocktails)
     ingredients = get_all_ingredients()
     ingredients_state = load_ingredients_state()
     return render_template('admin.html', 
-                         cocktails=cocktails, 
+                         grouped_cocktails=grouped_cocktails,
                          ingredients=ingredients,
                          ingredients_state=ingredients_state)
 

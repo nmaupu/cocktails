@@ -1,4 +1,15 @@
 cocktails:
+  - name: Between the sheets
+    image: https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=400&fit=crop
+    ingredients:
+      - name: White Rum
+        qty: 30
+      - name: Cognac
+        qty: 30
+      - name: Triple Sec
+        qty: 30
+      - name: Lemon Juice
+        qty: 20
   - name: Don Beachcomber
     image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
     ingredients:
