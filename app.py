@@ -18,8 +18,10 @@ app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-producti
 # Path to the cocktails YAML file (read-only, committed to git)
 COCKTAILS_FILE = Path(__file__).parent / 'cocktails.yaml'
 # Directory for state files (writable, not committed to git)
-# Can be overridden with STATE_DIR environment variable for Kubernetes volumes
-STATE_DIR = Path(os.environ.get('STATE_DIR', Path(__file__).parent))
+# Defaults to /data for Kubernetes PVC, falls back to app directory for local development
+STATE_DIR = Path(os.environ.get('STATE_DIR', '/data' if Path('/data').exists() else Path(__file__).parent))
+# Ensure state directory exists
+STATE_DIR.mkdir(parents=True, exist_ok=True)
 # Path to the ingredient state file (writable, not committed to git)
 INGREDIENTS_STATE_FILE = STATE_DIR / 'ingredients_state.json'
 # Path to the cocktail overrides file (writable, not committed to git)
