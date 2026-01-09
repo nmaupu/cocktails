@@ -253,6 +253,7 @@
             margin-top: 4px;
         }
 
+
         .alcohol-group {
             margin-bottom: 30px;
         }
@@ -305,6 +306,7 @@
         <div class="ingredients-section">
             <div class="ingredients-grid">
                 {% for ingredient in ingredients %}
+                {% if ingredient.lower() not in hidden_ingredients %}
                 <div class="ingredient-item {% if not ingredients_state.get(ingredient, True) %}unavailable{% endif %}" data-ingredient="{{ ingredient }}">
                     <input type="checkbox" 
                            class="ingredient-checkbox" 
@@ -313,6 +315,7 @@
                            onchange="toggleIngredient('{{ ingredient }}', this)">
                     <label for="ingredient-{{ loop.index }}" class="ingredient-label">{{ ingredient }}</label>
                 </div>
+                {% endif %}
                 {% endfor %}
             </div>
         </div>

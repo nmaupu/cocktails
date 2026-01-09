@@ -1,0 +1,157 @@
+* Cocktail Menu Web Application
+
+A mobile-friendly web application to display available cocktails. Guests can scan a QR code to see what cocktails are available, and admins can manage ingredient availability and cocktail states.
+
+** Features
+
+- Mobile-responsive design optimized for phone displays
+- Guest page showing available cocktails grouped by main alcohol
+- Admin panel for managing ingredient availability
+- Automatic cocktail disabling based on missing ingredients
+- Manual override capability for specific cocktails
+- Auto-refresh on guest page when cocktails are enabled/disabled
+- Category override support via YAML configuration
+- Health endpoint for Kubernetes deployment
+
+** Requirements
+
+- Python 3.8+
+- Flask 3.0.0
+- PyYAML 6.0.1
+
+** Installation
+
+#+BEGIN_SRC bash
+pip install -r requirements.txt
+#+END_SRC
+
+** Configuration
+
+*** Environment Variables
+
+- =ADMIN_PASSWORD=: Password for admin access (default: "admin")
+- =SECRET_KEY=: Secret key for Flask sessions (default: dev key, change in production)
+
+*** Files
+
+- =cocktails.yaml=: Cocktail definitions (committed to git)
+- =ingredients_state.json=: Ingredient availability state (gitignored)
+- =cocktails_overrides.json=: Manual cocktail overrides (gitignored)
+- =category_overrides.json=: Category overrides (gitignored, if used)
+
+** Usage
+
+*** Local Development
+
+#+BEGIN_SRC bash
+python app.py
+#+END_SRC
+
+The application will be available at =http://localhost:5000=
+
+*** Docker
+
+Build the image:
+
+#+BEGIN_SRC bash
+docker build -t cocktail-menu .
+#+END_SRC
+
+Run the container:
+
+#+BEGIN_SRC bash
+docker run -p 5000:5000 \
+  -e ADMIN_PASSWORD=your-secure-password \
+  -e SECRET_KEY=your-secret-key \
+  cocktail-menu
+#+END_SRC
+
+*** Kubernetes Deployment
+
+Build and push the Docker image:
+
+#+BEGIN_SRC bash
+docker build -t your-registry/cocktail-menu:latest .
+docker push your-registry/cocktail-menu:latest
+#+END_SRC
+
+Update =kubernetes.yaml= with your image registry and secrets, then deploy:
+
+#+BEGIN_SRC bash
+kubectl apply -f kubernetes.yaml
+#+END_SRC
+
+The deployment includes:
+- Persistent volume for state files
+- Health checks (liveness and readiness probes)
+- ConfigMap for =cocktails.yaml=
+- Secret for admin credentials
+- Service and Ingress configuration
+
+Note: Update the =cocktails.yaml= content in the ConfigMap or use a volume mount for the file.
+
+** API Endpoints
+
+- =GET /=: Guest page (public)
+- =GET /admin=: Admin panel (requires authentication)
+- =GET /login=: Login page
+- =GET /logout=: Logout
+- =GET /health= or =GET /healthz=: Health check endpoint
+- =GET /api/state=: Get current cocktail enabled/disabled state (public)
+- =POST /api/toggle-ingredient=: Toggle ingredient availability (admin only)
+- =POST /api/toggle-cocktail=: Toggle manual cocktail override (admin only)
+
+** Cocktail Configuration
+
+Cocktails are defined in =cocktails.yaml=. Each cocktail can have:
+
+- =name=: Cocktail name
+- =category=: (Optional) Manual category override
+- =image=: Image URL
+- =ingredients=: List of ingredients with quantities
+
+Example:
+
+#+BEGIN_SRC yaml
+- name: Old Fashioned
+  category: Bourbon  # Optional override
+  image: https://...
+  ingredients:
+    - name: Bourbon
+      qty: 45
+    - name: Angostura Bitters
+      qty: 2 dashes
+#+END_SRC
+
+** Customization
+
+*** Hidden Ingredients
+
+Edit the following variables in =app.py=:
+
+- =HIDDEN_INGREDIENTS_GUEST=: Ingredients to hide from guest page
+- =HIDDEN_INGREDIENTS_ADMIN=: Ingredients to hide from admin checklist
+
+*** Alcohol Whitelist
+
+The alcohol whitelist in =get_main_alcohol()= determines which ingredients are considered alcoholic for categorization. Modify the =alcohol_whitelist= list to add or remove alcohols.
+
+** Health Checks
+
+The application provides health check endpoints for Kubernetes:
+
+- =GET /health=
+- =GET /healthz=
+
+Both endpoints return 200 OK when healthy, 503 when unhealthy.
+
+** Security Notes
+
+- Change =ADMIN_PASSWORD= and =SECRET_KEY= in production
+- The admin panel is protected by simple password authentication
+- No authentication required for guest page
+- State files are gitignored and should be persisted via volumes in Kubernetes
+
+** License
+
+Private project

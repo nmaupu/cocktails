@@ -17,13 +17,22 @@ app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-producti
 
 # Path to the cocktails YAML file (read-only, committed to git)
 COCKTAILS_FILE = Path(__file__).parent / 'cocktails.yaml'
+# Directory for state files (writable, not committed to git)
+# Can be overridden with STATE_DIR environment variable for Kubernetes volumes
+STATE_DIR = Path(os.environ.get('STATE_DIR', Path(__file__).parent))
 # Path to the ingredient state file (writable, not committed to git)
-INGREDIENTS_STATE_FILE = Path(__file__).parent / 'ingredients_state.json'
+INGREDIENTS_STATE_FILE = STATE_DIR / 'ingredients_state.json'
 # Path to the cocktail overrides file (writable, not committed to git)
-COCKTAILS_OVERRIDES_FILE = Path(__file__).parent / 'cocktails_overrides.json'
+COCKTAILS_OVERRIDES_FILE = STATE_DIR / 'cocktails_overrides.json'
 
 # Admin password (use environment variable in production)
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin')
+
+# Ingredients to hide from guest page display
+HIDDEN_INGREDIENTS_GUEST = ['water', 'simple syrup', 'sugar', 'salt']
+
+# Ingredients to hide from admin checklist
+HIDDEN_INGREDIENTS_ADMIN = ['water', 'salt']
 
 
 def login_required(f):
@@ -78,42 +87,85 @@ def get_all_ingredients():
     with open(COCKTAILS_FILE, 'r', encoding='utf-8') as f:
         data = yaml.safe_load(f)
     cocktails = data.get('cocktails', [])
-    
+
     ingredients = set()
     for cocktail in cocktails:
         for ingredient in cocktail.get('ingredients', []):
             ingredients.add(ingredient['name'])
-    
+
     return sorted(list(ingredients))
 
 
-def get_main_alcohol(cocktail):
-    """Identify the main alcohol for a cocktail based on ingredients."""
-    # Common alcohol keywords
-    alcohol_keywords = ['rum', 'gin', 'vodka', 'whiskey', 'whisky', 'tequila', 'brandy', 
-                        'cognac', 'bourbon', 'scotch', 'rye', 'mezcal', 'pisco', 'cachaça']
+def get_main_alcohol(cocktail, use_override=True):
+    """Identify the main alcohol for a cocktail based on ingredients or override."""
+    # Check for manual category override in YAML first (case-insensitive)
+    if use_override:
+        for key in cocktail.keys():
+            if key.lower() == 'category':
+                return cocktail[key]
     
-    # Find alcoholic ingredients (those containing alcohol keywords)
-    alcoholic_ingredients = []
+    # Whitelist of actual alcoholic ingredients (case-insensitive matching)
+    alcohol_whitelist = [
+        'rum', 'white rum', 'dark rum', 'aged rum', 'spiced rum',
+        'gin', 'old tom gin', 'plymouth gin', 'pink gin',
+        'vodka',
+        'whiskey', 'whisky', 'rye whiskey', 'bourbon', 'scotch whisky', 'irish whiskey', 'japanese whisky',
+        'tequila', 'mezcal',
+        'brandy', 'cognac', 'armagnac',
+        'cachaça', 'pisco',
+        'aperol', 'campari', 'cointreau',
+        'prosecco', 'champagne', 'sparkling wine',
+        'red port', 'port', 'sherry',
+        'liqueur', 'liqueurs'
+    ]
+
+    # Find the first alcoholic ingredient (only those in the whitelist)
+    # Process ingredients in order and return the first one that matches
     for ingredient in cocktail.get('ingredients', []):
         ingredient_name_lower = ingredient['name'].lower()
-        for keyword in alcohol_keywords:
-            if keyword in ingredient_name_lower:
-                # Try to get quantity as number (handle cases like "15 leaves")
-                qty = ingredient.get('qty', 0)
-                try:
-                    qty_num = int(str(qty).split()[0])  # Get first number if it's "15 leaves"
-                except (ValueError, AttributeError):
-                    qty_num = 0
-                alcoholic_ingredients.append((ingredient['name'], qty_num))
+
+        # Check if ingredient matches any alcohol in whitelist
+        matched_alcohol_whitelist = None
+
+        # Check if ingredient name contains a whitelisted alcohol (only check one direction)
+        for alcohol in sorted(alcohol_whitelist, key=len, reverse=True):  # Longer names first for better matching
+            if alcohol in ingredient_name_lower:
+                matched_alcohol_whitelist = alcohol
                 break
-    
-    if not alcoholic_ingredients:
-        return 'Other'
-    
-    # Sort by quantity (descending) and return the one with highest quantity
-    alcoholic_ingredients.sort(key=lambda x: x[1], reverse=True)
-    return alcoholic_ingredients[0][0]
+
+        # Only process if we found a match in the whitelist
+        if matched_alcohol_whitelist:
+            # Try to get quantity as number (handle cases like "15 leaves", "2 dashes", etc.)
+            qty = ingredient.get('qty', 0)
+            qty_num = 0
+            try:
+                qty_str = str(qty).lower()
+                # Handle various quantity formats
+                if 'dash' in qty_str or 'drop' in qty_str or 'teaspoon' in qty_str or 'bar spoon' in qty_str:
+                    # For dashes/drops, use a small number for comparison
+                    qty_num = 1
+                elif 'top' in qty_str or 'splash' in qty_str or 'on top' in qty_str:
+                    qty_num = 0  # Don't count these as main alcohol
+                else:
+                    # Try to extract number (handle both int and float)
+                    qty_parts = str(qty).split()
+                    if qty_parts:
+                        # Try float first to handle decimals like 22.5
+                        try:
+                            qty_num = float(qty_parts[0])
+                        except ValueError:
+                            qty_num = int(qty_parts[0])
+            except (ValueError, AttributeError):
+                qty_num = 0
+
+            # Return the first matching ingredient with meaningful quantity
+            if qty_num > 0:
+                # Capitalize the matched alcohol name for display
+                display_name = matched_alcohol_whitelist.title()
+                return display_name
+
+    # If no alcoholic ingredient found, return 'Other'
+    return 'Other'
 
 
 def group_cocktails_by_alcohol(cocktails):
@@ -125,35 +177,35 @@ def group_cocktails_by_alcohol(cocktails):
         if main_alcohol not in grouped:
             grouped[main_alcohol] = []
         grouped[main_alcohol].append(cocktail)
-    
+
     # Sort within each group: enabled first (alphabetically), then disabled (alphabetically)
     for alcohol in grouped:
         grouped[alcohol].sort(key=lambda c: (
             not c.get('enabled', True),  # Enabled first (False < True)
             c['name'].lower()  # Then alphabetically
         ))
-    
+
     # Sort alcohol groups alphabetically
     sorted_groups = sorted(grouped.items(), key=lambda x: x[0])
-    
+
     return sorted_groups
 
 
 def compute_cocktail_enabled(cocktail, ingredients_state, cocktail_overrides):
     """Compute if a cocktail should be enabled based on ingredients and overrides."""
     cocktail_name = cocktail['name']
-    
+
     # Check for manual override first
     if cocktail_name in cocktail_overrides:
         return cocktail_overrides[cocktail_name]
-    
+
     # Check if all ingredients are available
     # Default to available if not in state (True)
     for ingredient in cocktail.get('ingredients', []):
         ingredient_name = ingredient['name']
         if not ingredients_state.get(ingredient_name, True):
             return False  # At least one ingredient is unavailable
-    
+
     return True  # All ingredients are available
 
 
@@ -162,17 +214,17 @@ def load_cocktails():
     with open(COCKTAILS_FILE, 'r', encoding='utf-8') as f:
         data = yaml.safe_load(f)
     cocktails = data.get('cocktails', [])
-    
+
     # Load ingredient state and cocktail overrides
     ingredients_state = load_ingredients_state()
     cocktail_overrides = load_cocktail_overrides()
-    
+
     # Compute enabled state for each cocktail
     for cocktail in cocktails:
         cocktail['enabled'] = compute_cocktail_enabled(cocktail, ingredients_state, cocktail_overrides)
         # Store if it's a manual override
         cocktail['is_override'] = cocktail['name'] in cocktail_overrides
-    
+
     return cocktails
 
 
@@ -184,11 +236,11 @@ def health():
         # Check if cocktails file is readable
         if not COCKTAILS_FILE.exists():
             return jsonify({'status': 'unhealthy', 'error': 'cocktails.yaml not found'}), 503
-        
+
         # Try to load cocktails to verify the file is valid
         with open(COCKTAILS_FILE, 'r', encoding='utf-8') as f:
             yaml.safe_load(f)
-        
+
         return jsonify({
             'status': 'healthy',
             'service': 'cocktail-menu'
@@ -204,9 +256,13 @@ def health():
 def index():
     """Display the main cocktail menu page."""
     cocktails = load_cocktails()
+    # Filter to show only enabled cocktails
+    enabled_cocktails = [c for c in cocktails if c.get('enabled', True)]
     # Group cocktails by main alcohol
-    grouped_cocktails = group_cocktails_by_alcohol(cocktails)
-    return render_template('index.html', grouped_cocktails=grouped_cocktails)
+    grouped_cocktails = group_cocktails_by_alcohol(enabled_cocktails)
+    return render_template('index.html', 
+                         grouped_cocktails=grouped_cocktails,
+                         hidden_ingredients=HIDDEN_INGREDIENTS_GUEST)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -238,10 +294,11 @@ def admin():
     grouped_cocktails = group_cocktails_by_alcohol(cocktails)
     ingredients = get_all_ingredients()
     ingredients_state = load_ingredients_state()
-    return render_template('admin.html', 
+    return render_template('admin.html',
                          grouped_cocktails=grouped_cocktails,
                          ingredients=ingredients,
-                         ingredients_state=ingredients_state)
+                         ingredients_state=ingredients_state,
+                         hidden_ingredients=HIDDEN_INGREDIENTS_ADMIN)
 
 
 @app.route('/api/state')
@@ -258,17 +315,17 @@ def toggle_ingredient():
     """Toggle the availability of an ingredient."""
     data = request.get_json()
     ingredient_name = data.get('name')
-    
+
     if not ingredient_name:
         return jsonify({'error': 'Ingredient name is required'}), 400
-    
+
     # Load current state
     ingredients_state = load_ingredients_state()
     # Toggle the state (default to True if not in state)
     current_state = ingredients_state.get(ingredient_name, True)
     new_state = not current_state
     ingredients_state[ingredient_name] = new_state
-    
+
     # If ingredient is becoming available, clear overrides for cocktails that use it
     if new_state:  # Ingredient is now available
         # Load cocktails and overrides
@@ -276,12 +333,12 @@ def toggle_ingredient():
             yaml_data = yaml.safe_load(f)
         cocktails = yaml_data.get('cocktails', [])
         cocktail_overrides = load_cocktail_overrides()
-        
+
         # Find cocktails that use this ingredient
         cocktails_to_check = [c for c in cocktails if any(
             ing['name'] == ingredient_name for ing in c.get('ingredients', [])
         )]
-        
+
         # For each cocktail using this ingredient, check if override should be cleared
         for cocktail in cocktails_to_check:
             cocktail_name = cocktail['name']
@@ -295,13 +352,13 @@ def toggle_ingredient():
                 # If all ingredients are available, remove the override
                 if all_available:
                     del cocktail_overrides[cocktail_name]
-        
+
         # Save updated overrides if any were removed
         save_cocktail_overrides(cocktail_overrides)
-    
+
     # Save the updated ingredient state
     save_ingredients_state(ingredients_state)
-    
+
     return jsonify({'success': True, 'available': new_state})
 
 @app.route('/api/toggle-cocktail', methods=['POST'])
@@ -310,38 +367,38 @@ def toggle_cocktail():
     """Toggle manual override for a cocktail."""
     data = request.get_json()
     cocktail_name = data.get('name')
-    
+
     if not cocktail_name:
         return jsonify({'error': 'Cocktail name is required'}), 400
-    
+
     # Verify cocktail exists
     with open(COCKTAILS_FILE, 'r', encoding='utf-8') as f:
         yaml_data = yaml.safe_load(f)
     cocktail_names = [c['name'] for c in yaml_data.get('cocktails', [])]
-    
+
     if cocktail_name not in cocktail_names:
         return jsonify({'error': 'Cocktail not found'}), 404
-    
+
     # Load current overrides and ingredients state
     cocktail_overrides = load_cocktail_overrides()
     ingredients_state = load_ingredients_state()
-    
+
     # Get the cocktail to compute current enabled state
     cocktails = yaml_data.get('cocktails', [])
     cocktail = next((c for c in cocktails if c['name'] == cocktail_name), None)
     if not cocktail:
         return jsonify({'error': 'Cocktail not found'}), 404
-    
+
     current_enabled = compute_cocktail_enabled(cocktail, ingredients_state, cocktail_overrides)
-    
+
     # Toggle: set override to opposite of current enabled state
     cocktail_overrides[cocktail_name] = not current_enabled
-    
+
     # Save the updated overrides
     save_cocktail_overrides(cocktail_overrides)
-    
+
     return jsonify({
-        'success': True, 
+        'success': True,
         'enabled': not current_enabled,
         'is_override': True
     })

@@ -1,0 +1,152 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cocktails
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cocktail-secrets
+  namespace: cocktails
+type: Opaque
+stringData:
+  ADMIN_PASSWORD: "your-secure-password-here"
+  SECRET_KEY: "your-secret-key-here"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cocktail-config
+  namespace: cocktails
+data:
+  cocktails.yaml: |
+    # Your cocktails.yaml content will be mounted here
+    # Or use a volume mount for the file
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cocktail-menu
+  namespace: cocktails
+  labels:
+    app: cocktail-menu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cocktail-menu
+  template:
+    metadata:
+      labels:
+        app: cocktail-menu
+    spec:
+      containers:
+      - name: cocktail-menu
+        image: cocktail-menu:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+          name: http
+        env:
+        - name: ADMIN_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cocktail-secrets
+              key: ADMIN_PASSWORD
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: cocktail-secrets
+              key: SECRET_KEY
+        - name: STATE_DIR
+          value: "/app/data"
+        volumeMounts:
+        - name: cocktails-data
+          mountPath: /app/cocktails.yaml
+          subPath: cocktails.yaml
+          readOnly: true
+        - name: state-data
+          mountPath: /app/data
+          # State files will be written to /app/data (ingredients_state.json, cocktails_overrides.json)
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+      volumes:
+      - name: cocktails-data
+        configMap:
+          name: cocktail-config
+      - name: state-data
+        persistentVolumeClaim:
+          claimName: cocktail-state-pvc
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cocktail-state-pvc
+  namespace: cocktails
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cocktail-menu
+  namespace: cocktails
+  labels:
+    app: cocktail-menu
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 5000
+    protocol: TCP
+    name: http
+  selector:
+    app: cocktail-menu
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cocktail-menu-ingress
+  namespace: cocktails
+  annotations:
+    # Add your ingress annotations here (e.g., cert-manager, nginx, etc.)
+    # nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  # Uncomment and configure based on your ingress controller
+  # ingressClassName: nginx
+  rules:
+  - host: cocktails.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: cocktail-menu
+            port:
+              number: 80
