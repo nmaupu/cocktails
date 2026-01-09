@@ -23,6 +23,44 @@
     .container {
       max-width: 600px;
       margin: 0 auto;
+      position: relative;
+    }
+
+    .language-switcher {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .lang-flag {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid rgba(255, 255, 255, 0.5);
+      transition: all 0.2s ease;
+      opacity: 0.7;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .lang-flag:hover {
+      opacity: 1;
+      border-color: rgba(255, 255, 255, 0.9);
+      transform: scale(1.1);
+    }
+
+    .lang-flag.active {
+      opacity: 1;
+      border-color: white;
+      border-width: 3px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     h1 {
@@ -138,13 +176,31 @@
         padding: 10px;
         min-height: 70px;
       }
+
+      .language-switcher {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+      }
+
+      .lang-flag {
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+      }
     }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <h1>🍹 Cocktail Menu</h1>
+    <div class="language-switcher">
+      <div class="lang-flag {% if lang == 'en' %}active{% endif %}" onclick="setLanguage('en')" title="English">🇬🇧
+      </div>
+      <div class="lang-flag {% if lang == 'fr' %}active{% endif %}" onclick="setLanguage('fr')" title="Français">🇫🇷
+      </div>
+    </div>
+    <h1>🍹 Cocktails Menu</h1>
 
     {% if grouped_cocktails %}
     {% for alcohol, cocktails in grouped_cocktails %}
@@ -157,8 +213,8 @@
             <h2 class="cocktail-name">{{ cocktail.name }}</h2>
             <ul class="ingredients-list">
               {% for ingredient in cocktail.ingredients %}
-              {% if ingredient.name.lower() not in hidden_ingredients %}
-              <li class="ingredient-item">{{ ingredient.name }}</li>
+              {% if ingredient.name_en.lower() not in hidden_ingredients %}
+              <li class="ingredient-item">{{ ingredient.display_name }}</li>
               {% endif %}
               {% endfor %}
             </ul>
@@ -217,6 +273,24 @@
 
     // Check for updates every 2 seconds
     setInterval(checkForUpdates, 2000);
+
+    async function setLanguage(lang) {
+      try {
+        const response = await fetch('/api/set-language', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ lang: lang })
+        });
+
+        if (response.ok) {
+          window.location.reload();
+        }
+      } catch (error) {
+        console.error('Error setting language:', error);
+      }
+    }
   </script>
 </body>
 

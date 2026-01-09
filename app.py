@@ -84,8 +84,50 @@ def save_cocktail_overrides(overrides):
         json.dump(overrides, f, indent=2)
 
 
+def get_ingredient_name(ingredient, lang='en'):
+    """Get the ingredient name in the specified language.
+    
+    Ingredient names are always dicts with at least 'en' key.
+    If 'fr' is missing, it defaults to 'en'.
+    """
+    name = ingredient.get('name', {})
+    # Handle legacy string format (shouldn't happen after normalization)
+    if isinstance(name, str):
+        name = {'en': name}
+    # Ensure we have a dict with at least 'en'
+    if not isinstance(name, dict) or 'en' not in name:
+        return ''
+    # If requested language is not available, fall back to English
+    if lang == 'fr' and 'fr' not in name:
+        return name.get('en', '')
+    return name.get(lang, name.get('en', ''))
+
+
+def get_ingredient_name_en(ingredient):
+    """Get the English ingredient name (used as key for state management)."""
+    return get_ingredient_name(ingredient, 'en')
+
+
+def get_category_name(category, lang='en'):
+    """Get the category name in the specified language.
+    
+    Categories are always dicts with at least 'en' key.
+    If 'fr' is missing, it defaults to 'en'.
+    """
+    # Handle legacy string format (shouldn't happen after normalization)
+    if isinstance(category, str):
+        category = {'en': category}
+    # Ensure we have a dict with at least 'en'
+    if not isinstance(category, dict) or 'en' not in category:
+        return ''
+    # If requested language is not available, fall back to English
+    if lang == 'fr' and 'fr' not in category:
+        return category.get('en', '')
+    return category.get(lang, category.get('en', ''))
+
+
 def get_all_ingredients():
-    """Get a list of all unique ingredients from all cocktails."""
+    """Get a list of all unique ingredients from all cocktails (using English names as keys)."""
     with open(COCKTAILS_FILE, 'r', encoding='utf-8') as f:
         data = yaml.safe_load(f)
     cocktails = data.get('cocktails', [])
@@ -93,18 +135,21 @@ def get_all_ingredients():
     ingredients = set()
     for cocktail in cocktails:
         for ingredient in cocktail.get('ingredients', []):
-            ingredients.add(ingredient['name'])
+            # Use English name as the key for state management
+            ingredient_name = get_ingredient_name(ingredient, 'en')
+            ingredients.add(ingredient_name)
 
     return sorted(list(ingredients))
 
 
-def get_main_alcohol(cocktail, use_override=True):
+def get_main_alcohol(cocktail, use_override=True, lang='en'):
     """Identify the main alcohol for a cocktail based on ingredients or override."""
     # Check for manual category override in YAML first (case-insensitive)
     if use_override:
         for key in cocktail.keys():
             if key.lower() == 'category':
-                return cocktail[key]
+                category = cocktail[key]
+                return get_category_name(category, lang)
     
     # Whitelist of actual alcoholic ingredients (case-insensitive matching)
     alcohol_whitelist = [
@@ -124,7 +169,8 @@ def get_main_alcohol(cocktail, use_override=True):
     # Find the first alcoholic ingredient (only those in the whitelist)
     # Process ingredients in order and return the first one that matches
     for ingredient in cocktail.get('ingredients', []):
-        ingredient_name_lower = ingredient['name'].lower()
+        ingredient_name = get_ingredient_name(ingredient, 'en')
+        ingredient_name_lower = ingredient_name.lower()
 
         # Check if ingredient matches any alcohol in whitelist
         matched_alcohol_whitelist = None
@@ -166,16 +212,18 @@ def get_main_alcohol(cocktail, use_override=True):
                 display_name = matched_alcohol_whitelist.title()
                 return display_name
 
-    # If no alcoholic ingredient found, return 'Other'
+    # If no alcoholic ingredient found, return 'Other' (translate based on lang)
+    if lang == 'fr':
+        return 'Autre'
     return 'Other'
 
 
-def group_cocktails_by_alcohol(cocktails):
+def group_cocktails_by_alcohol(cocktails, lang='en'):
     """Group cocktails by main alcohol and sort them."""
     # Group cocktails by main alcohol
     grouped = {}
     for cocktail in cocktails:
-        main_alcohol = get_main_alcohol(cocktail)
+        main_alcohol = get_main_alcohol(cocktail, lang=lang)
         if main_alcohol not in grouped:
             grouped[main_alcohol] = []
         grouped[main_alcohol].append(cocktail)
@@ -204,14 +252,15 @@ def compute_cocktail_enabled(cocktail, ingredients_state, cocktail_overrides):
     # Check if all ingredients are available
     # Default to available if not in state (True)
     for ingredient in cocktail.get('ingredients', []):
-        ingredient_name = ingredient['name']
+        # Use English name as key for state lookup
+        ingredient_name = get_ingredient_name(ingredient, 'en')
         if not ingredients_state.get(ingredient_name, True):
             return False  # At least one ingredient is unavailable
 
     return True  # All ingredients are available
 
 
-def load_cocktails():
+def load_cocktails(lang='en'):
     """Load cocktails from the YAML file and compute enabled state."""
     with open(COCKTAILS_FILE, 'r', encoding='utf-8') as f:
         data = yaml.safe_load(f)
@@ -221,11 +270,15 @@ def load_cocktails():
     ingredients_state = load_ingredients_state()
     cocktail_overrides = load_cocktail_overrides()
 
-    # Compute enabled state for each cocktail
+    # Compute enabled state for each cocktail and translate ingredient names
     for cocktail in cocktails:
         cocktail['enabled'] = compute_cocktail_enabled(cocktail, ingredients_state, cocktail_overrides)
         # Store if it's a manual override
         cocktail['is_override'] = cocktail['name'] in cocktail_overrides
+        # Translate ingredient names for display and add English name for state lookup
+        for ingredient in cocktail.get('ingredients', []):
+            ingredient['display_name'] = get_ingredient_name(ingredient, lang)
+            ingredient['name_en'] = get_ingredient_name_en(ingredient)
 
     return cocktails
 
@@ -257,14 +310,17 @@ def health():
 @app.route('/')
 def index():
     """Display the main cocktail menu page."""
-    cocktails = load_cocktails()
+    # Get language from session, default to 'fr'
+    lang = session.get('lang', 'fr')
+    cocktails = load_cocktails(lang)
     # Filter to show only enabled cocktails
     enabled_cocktails = [c for c in cocktails if c.get('enabled', True)]
     # Group cocktails by main alcohol
-    grouped_cocktails = group_cocktails_by_alcohol(enabled_cocktails)
+    grouped_cocktails = group_cocktails_by_alcohol(enabled_cocktails, lang=lang)
     return render_template('index.html', 
                          grouped_cocktails=grouped_cocktails,
-                         hidden_ingredients=HIDDEN_INGREDIENTS_GUEST)
+                         hidden_ingredients=HIDDEN_INGREDIENTS_GUEST,
+                         lang=lang)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -291,22 +347,39 @@ def logout():
 @login_required
 def admin():
     """Display the admin page to manage cocktails and ingredients."""
-    cocktails = load_cocktails()
+    # Get language from session, default to 'fr'
+    lang = session.get('lang', 'fr')
+    cocktails = load_cocktails(lang)
     # Group cocktails by main alcohol
-    grouped_cocktails = group_cocktails_by_alcohol(cocktails)
+    grouped_cocktails = group_cocktails_by_alcohol(cocktails, lang=lang)
     ingredients = get_all_ingredients()
     ingredients_state = load_ingredients_state()
+    
+    # Create a mapping of English ingredient names to their translated display names
+    ingredients_display = {}
+    with open(COCKTAILS_FILE, 'r', encoding='utf-8') as f:
+        data = yaml.safe_load(f)
+    all_cocktails = data.get('cocktails', [])
+    for cocktail in all_cocktails:
+        for ingredient in cocktail.get('ingredients', []):
+            ingredient_name_en = get_ingredient_name_en(ingredient)
+            if ingredient_name_en not in ingredients_display:
+                ingredients_display[ingredient_name_en] = get_ingredient_name(ingredient, lang)
+    
     return render_template('admin.html',
                          grouped_cocktails=grouped_cocktails,
                          ingredients=ingredients,
+                         ingredients_display=ingredients_display,
                          ingredients_state=ingredients_state,
-                         hidden_ingredients=HIDDEN_INGREDIENTS_ADMIN)
+                         hidden_ingredients=HIDDEN_INGREDIENTS_ADMIN,
+                         lang=lang)
 
 
 @app.route('/api/state')
 def get_state():
     """Get the current enabled/disabled state of all cocktails."""
-    cocktails = load_cocktails()
+    lang = session.get('lang', 'fr')
+    cocktails = load_cocktails(lang)
     state = {c['name']: c.get('enabled', True) for c in cocktails}
     return jsonify(state)
 
@@ -336,9 +409,9 @@ def toggle_ingredient():
         cocktails = yaml_data.get('cocktails', [])
         cocktail_overrides = load_cocktail_overrides()
 
-        # Find cocktails that use this ingredient
+        # Find cocktails that use this ingredient (using English name as key)
         cocktails_to_check = [c for c in cocktails if any(
-            ing['name'] == ingredient_name for ing in c.get('ingredients', [])
+            get_ingredient_name(ing, 'en') == ingredient_name for ing in c.get('ingredients', [])
         )]
 
         # For each cocktail using this ingredient, check if override should be cleared
@@ -348,7 +421,7 @@ def toggle_ingredient():
             if cocktail_name in cocktail_overrides:
                 # Check if all ingredients are now available
                 all_available = all(
-                    ingredients_state.get(ing['name'], True)
+                    ingredients_state.get(get_ingredient_name(ing, 'en'), True)
                     for ing in cocktail.get('ingredients', [])
                 )
                 # If all ingredients are available, remove the override
@@ -404,6 +477,19 @@ def toggle_cocktail():
         'enabled': not current_enabled,
         'is_override': True
     })
+
+
+@app.route('/api/set-language', methods=['POST'])
+def set_language():
+    """Set the language preference in session."""
+    data = request.get_json()
+    lang = data.get('lang', 'en')
+    
+    if lang not in ['en', 'fr']:
+        return jsonify({'error': 'Invalid language'}), 400
+    
+    session['lang'] = lang
+    return jsonify({'success': True, 'lang': lang})
 
 
 if __name__ == '__main__':

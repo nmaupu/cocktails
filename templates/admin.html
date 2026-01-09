@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Cocktail Menu</title>
+    <title>Admin - Cocktails Menu</title>
     <style>
         * {
             margin: 0;
@@ -22,6 +22,55 @@
         .container {
             max-width: 800px;
             margin: 0 auto;
+            position: relative;
+        }
+
+        .language-switcher {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .lang-flag {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.2s ease;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .lang-flag:hover {
+            opacity: 1;
+            border-color: rgba(255, 255, 255, 0.9);
+            transform: scale(1.1);
+        }
+
+        .lang-flag.active {
+            opacity: 1;
+            border-color: white;
+            border-width: 3px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .language-switcher-inline {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .language-switcher-inline .lang-flag {
+            width: 28px;
+            height: 28px;
+            font-size: 16px;
         }
 
         h1 {
@@ -51,9 +100,17 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            margin-top: 50px;
+            padding-right: 0;
+        }
+        
+        .header-links-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .back-link, .logout-link {
+        .back-link {
             display: inline-block;
             color: white;
             text-decoration: none;
@@ -61,8 +118,31 @@
             opacity: 0.9;
         }
 
-        .back-link:hover, .logout-link:hover {
+        .back-link:hover {
             opacity: 1;
+        }
+        
+        .logout-button {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.2s ease;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.2);
+            text-decoration: none;
+            color: white;
+        }
+        
+        .logout-button:hover {
+            opacity: 1;
+            border-color: rgba(255, 255, 255, 0.9);
+            transform: scale(1.1);
         }
 
         .ingredients-section {
@@ -290,6 +370,36 @@
             .ingredients-grid {
                 grid-template-columns: 1fr;
             }
+
+            .language-switcher {
+                position: fixed;
+                top: 10px;
+                right: 10px;
+            }
+
+            .lang-flag {
+                width: 28px;
+                height: 28px;
+                font-size: 16px;
+            }
+            
+            .logout-button {
+                width: 28px;
+                height: 28px;
+                font-size: 16px;
+            }
+
+            .header-links {
+                margin-top: 20px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .header-links-right {
+                width: 100%;
+                justify-content: space-between;
+            }
         }
     </style>
 </head>
@@ -297,23 +407,29 @@
     <div class="container">
         <div class="header-links">
             <a href="/" class="back-link">← Back to Menu</a>
-            <a href="{{ url_for('logout') }}" class="logout-link">Logout</a>
+            <div class="header-links-right">
+                <div class="language-switcher-inline">
+                    <div class="lang-flag {% if lang == 'en' %}active{% endif %}" onclick="setLanguage('en')" title="English">🇬🇧</div>
+                    <div class="lang-flag {% if lang == 'fr' %}active{% endif %}" onclick="setLanguage('fr')" title="Français">🇫🇷</div>
+                </div>
+                <a href="{{ url_for('logout') }}" class="logout-button" title="Logout">🚪</a>
+            </div>
         </div>
         <h1>🍹 Admin Panel</h1>
         <p class="subtitle">Manage ingredients and cocktails</p>
-        
+
         <h2>Ingredients</h2>
         <div class="ingredients-section">
             <div class="ingredients-grid">
                 {% for ingredient in ingredients %}
                 {% if ingredient.lower() not in hidden_ingredients %}
                 <div class="ingredient-item {% if not ingredients_state.get(ingredient, True) %}unavailable{% endif %}" data-ingredient="{{ ingredient }}">
-                    <input type="checkbox" 
-                           class="ingredient-checkbox" 
+                    <input type="checkbox"
+                           class="ingredient-checkbox"
                            id="ingredient-{{ loop.index }}"
                            {% if ingredients_state.get(ingredient, True) %}checked{% endif %}
                            onchange="toggleIngredient('{{ ingredient }}', this)">
-                    <label for="ingredient-{{ loop.index }}" class="ingredient-label">{{ ingredient }}</label>
+                    <label for="ingredient-{{ loop.index }}" class="ingredient-label">{{ ingredients_display.get(ingredient, ingredient) }}</label>
                 </div>
                 {% endif %}
                 {% endfor %}
@@ -327,7 +443,7 @@
                 <h3 class="alcohol-header">{{ alcohol }}</h3>
                 <div class="cocktail-list">
                     {% for cocktail in cocktails %}
-            <div class="cocktail-card {% if not cocktail.get('enabled', True) %}disabled{% endif %} {% if cocktail.get('is_override') %}override{% endif %}" 
+            <div class="cocktail-card {% if not cocktail.get('enabled', True) %}disabled{% endif %} {% if cocktail.get('is_override') %}override{% endif %}"
                  data-name="{{ cocktail.name }}">
                 {% if cocktail.image %}
                 <img src="{{ cocktail.image }}" alt="{{ cocktail.name }}" class="cocktail-image" loading="lazy">
@@ -338,8 +454,8 @@
                     <h2 class="cocktail-name">{{ cocktail.name }}</h2>
                     <ul class="ingredients-list">
                         {% for ingredient in cocktail.ingredients %}
-                        <li class="ingredient-in-cocktail {% if not ingredients_state.get(ingredient.name, True) %}unavailable{% endif %}">
-                            {{ ingredient.name }}
+                        <li class="ingredient-in-cocktail {% if not ingredients_state.get(ingredient.name_en, True) %}unavailable{% endif %}">
+                            {{ ingredient.display_name }}
                         </li>
                         {% endfor %}
                     </ul>
@@ -348,7 +464,7 @@
                     <span class="status-badge {% if cocktail.get('enabled', True) %}status-enabled{% else %}status-disabled{% endif %}">
                         {% if cocktail.get('enabled', True) %}Enabled{% else %}Disabled{% endif %}
                     </span>
-                    <div class="toggle-switch {% if cocktail.get('enabled', True) %}active{% endif %}" 
+                    <div class="toggle-switch {% if cocktail.get('enabled', True) %}active{% endif %}"
                          onclick="toggleCocktail('{{ cocktail.name }}', this)">
                     </div>
                     {% if cocktail.get('is_override') %}
@@ -385,7 +501,7 @@
                 }
 
                 const data = await response.json();
-                
+
                 if (data.success) {
                     const item = checkbox.closest('.ingredient-item');
                     if (data.available) {
@@ -423,11 +539,11 @@
                 }
 
                 const data = await response.json();
-                
+
                 if (data.success) {
                     const card = toggleElement.closest('.cocktail-card');
                     const badge = card.querySelector('.status-badge');
-                    
+
                     if (data.enabled) {
                         toggleElement.classList.add('active');
                         card.classList.remove('disabled');
@@ -439,7 +555,7 @@
                         badge.textContent = 'Disabled';
                         badge.className = 'status-badge status-disabled';
                     }
-                    
+
                     // Update override badge
                     const overrideBadge = card.querySelector('.override-badge');
                     if (data.is_override) {
@@ -462,6 +578,24 @@
             } catch (error) {
                 console.error('Error:', error);
                 alert('Failed to toggle cocktail. Please try again.');
+            }
+        }
+
+        async function setLanguage(lang) {
+            try {
+                const response = await fetch('/api/set-language', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ lang: lang })
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                }
+            } catch (error) {
+                console.error('Error setting language:', error);
             }
         }
     </script>

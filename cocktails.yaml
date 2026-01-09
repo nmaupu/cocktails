@@ -1,373 +1,632 @@
 cocktails:
-  - name: Between the sheets
-    category: Rum
-    image: https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=400&fit=crop
-    ingredients:
-      - name: White Rum
-        qty: 30
-      - name: Cognac
-        qty: 30
-      - name: Triple Sec
-        qty: 30
-      - name: Lemon Juice
-        qty: 20
-  - name: Don Beachcomber
-    category: Rum
-    image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
-    ingredients:
-      - name: White Rum
-        qty: 45
-      - name: Triple Sec
-        qty: 20
-      - name: Lime Juice
-        qty: 15
-      - name: Maraschino
-        qty: 5
-      - name: Simple Syrup
-        qty: 5
-  - name: Basil Smash
-    image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-    ingredients:
-      - name: Gin
-        qty: 45
-      - name: Lime Juice
-        qty: 20
-      - name: Simple Syrup
-        qty: 15
-      - name: Green Basil
-        qty: 15 leaves
-  - name: Jasmine
-    image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-    ingredients:
-      - name: Gin
-        qty: 50
-      - name: Campari
-        qty: 10
-      - name: Triple Sec
-        qty: 10
-      - name: Lemon Juice
-        qty: 5
-      - name: Simple Syrup
-        qty: 2 drops
-  - name: Casino
-    image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
-    ingredients:
-      - name: Gin
-        qty: 40
-      - name: Maraschino
-        qty: 10
-      - name: Orange Bitters
-        qty: 2
-      - name: Lemon Juice
-        qty: 10
-  - name: Manhattan Island
-    image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-    ingredients:
-      - name: Cognac
-        qty: 60
-      - name: Red Vermouth
-        qty: 30
-      - name: Maraschino
-        qty: 5
-      - name: Angostura
-        qty: 3 dashes
-  - name: Naked & Famous
-    category: Mezcal
-    image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
-    ingredients:
-      - name: Mezcal
-        qty: 22.5
-      - name: Yellow Chartreuse
-        qty: 22.5
-      - name: Aperol
-        qty: 22.5
-      - name: Lime Juice
-        qty: 22.5
-  - name: Oriental
-    category: Whisky
-    image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-    ingredients:
-      - name: Rye Whiskey
-        qty: 45
-      - name: Red Vermouth
-        qty: 22.5
-      - name: Triple Sec
-        qty: 22.5
-      - name: Lime Juice
-        qty: 15
-  - name: Whiskey Smash
-    category: Whisky
-    image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
-    ingredients:
-      - name: Bourbon
-        qty: 45
-      - name: Simple Syrup
-        qty: 25
-      - name: Lemon Juice
-        qty: 25
-      - name: Mint
-        qty: 3 leaves
-  - name: Boulevardier
-    category: Whisky
-    image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-    ingredients:
-      - name: Bourbon
-        qty: 45
-      - name: Red Vermouth
-        qty: 30
-      - name: Campari
-        qty: 30
-  - name: Highlander
-    category: Whisky
-    image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
-    ingredients:
-      - name: Scotch Whisky
-        qty: 60
-      - name: Red Vermouth
-        qty: 30
-      - name: Orange Bitters
-        qty: 1 dash
-  - name: Manhattan
-    category: Whisky
-    image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-    ingredients:
-      - name: Bourbon
-        qty: 50
-      - name: Red Vermouth
-        qty: 25
-      - name: Angostura
-        qty: 1 dash
-  - name: Margarita
-    image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
-    ingredients:
-      - name: Tequila
-        qty: 50
-      - name: Triple Sec
-        qty: 20
-      - name: Lime Juice
-        qty: 20
-  - name: Martinez
-    category: Gin
-    image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-    ingredients:
-      - name: Gin
-        qty: 45
-      - name: Red Vermouth
-        qty: 45
-      - name: Maraschino
-        qty: 1 bar spoon
-      - name: Orange Bitters
-        qty: 2
-  - name: Mezcal Megroni
-    category: Americanos
-    image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
-    ingredients:
-      - name: Mezcal
-        qty: 30
-      - name: Red Vermouth
-        qty: 30
-      - name: Campari
-        qty: 30
-  - name: Negroni
-    category: Americanos
-    image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-    ingredients:
-      - name: Gin
-        qty: 30
-      - name: Red Vermouth
-        qty: 30
-      - name: Campari
-        qty: 30
-  - name: Negroni Sbagliato
-    category: Americanos
-    image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
-    ingredients:
-      - name: Prosecco
-        qty: 60
-      - name: Red Vermouth
-        qty: 30
-      - name: Campari
-        qty: 30
-  - name: Suffering Bastard
-    image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-    ingredients:
-      - name: Gin
-        qty: 30
-      - name: Cognac
-        qty: 30
-      - name: Lime Juice
-        qty: 15
-      - name: Angostura
-        qty: 2 dashes
-      - name: Ginger Beer
-        qty: Top Up
-  - name: Moscow Mule
-    image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
-    ingredients:
-      - name: Vodka
-        qty: 45
-      - name: Ginger Beer
-        qty: 120
-      - name: Lime Juice
-        qty: 10
-  - name: Balalaika
-    image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-    ingredients:
-      - name: Vodka
-        qty: 35
-      - name: Triple Sec
-        qty: 25
-      - name: Lime Juice
-        qty: 15
-      - name: Water
-        qty: 10
-  - name: Bee's Knees
-    image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
-    ingredients:
-      - name: Gin
-        qty: 55
-      - name: Honey Syrup
-        qty: 2 teaspoon
-      - name: Lemon Juice
-        qty: 22.5
-      - name: Orange Juice
-        qty: 22.5
-  - name: Paloma
-    image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-    ingredients:
-      - name: Tequila
-        qty: 50
-      - name: Grapefruit Soda
-        qty: 100
-      - name: Lime Juice
-        qty: 5
-      - name: Salt
-        qty: A pinch
-  - name: Americano
-    category: Americanos
-    image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
-    ingredients:
-      - name: Campari
-        qty: 30
-      - name: Red Vermouth
-        qty: 30
-      - name: Club Soda
-        qty: Spash
-  - name: Whiskey sour
-    category: Whisky
-    image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-    ingredients:
-      - name: Bourbon
-        qty: 50
-      - name: Simple Syrup
-        qty: 20
-      - name: Lemon Juice
-        qty: 20
-  - name: Aperol Spritz
-    category: Others
-    image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
-    ingredients:
-      - name: Prosecco
-        qty: 100
-      - name: Aperol
-        qty: 50
-      - name: Angostura
-        qty: 2 dashes
-  - name: Caipirihna
-    image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-    ingredients:
-      - name: Cachaça
-        qty: 60
-      - name: Lime
-        qty: 1
-      - name: Sugar
-        qty: 4 teaspoons
-  - name: Celtic Margarita
-    category: Whisky
-    image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
-    ingredients:
-      - name: Scotch Whisky
-        qty: 50
-      - name: Triple Sec
-        qty: 20
-      - name: Lime Juice
-        qty: 20
-  - name: Daiquiri
-    category: Rum
-    image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-    ingredients:
-      - name: White Rum
-        qty: 50
-      - name: Simple Syrup
-        qty: 20
-      - name: Lime Juice
-        qty: 20
-  - name: Garibaldi
-    category: Americanos
-    image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
-    ingredients:
-      - name: Campari
-        qty: 45
-      - name: Simple Syrup
-        qty: 5
-      - name: Orange Juice
-        qty: On Top
-  - name: Gimlet
-    image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-    ingredients:
-      - name: Gin
-        qty: 50
-      - name: Lime Juice
-        qty: 25
-      - name: Simple Syrup
-        qty: 15
-  - name: Negroski
-    image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
-    ingredients:
-      - name: Vodka
-        qty: 35
-      - name: Red Vermouth
-        qty: 30
-      - name: Campari
-        qty: 25
-  - name: Old Fashioned
-    category: Whisky
-    image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-    ingredients:
-      - name: Bourbon
-        qty: 45
-      - name: Sugar
-        qty: 1 cube
-      - name: Angostura
-        qty: 2 dashes
-      - name: Water
-        qty: 1
-  - name: Pink Gin
-    image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
-    ingredients:
-      - name: Gin
-        qty: 60
-      - name: Simple Syrup
-        qty: 5
-      - name: Angostura
-        qty: 4 dashes
-  - name: Sidecar
-    image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-    ingredients:
-      - name: Cognac
-        qty: 50
-      - name: Triple Sec
-        qty: 20
-      - name: Lemon Juice
-        qty: 20
-  - name: Aviation
-    image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
-    ingredients:
-      - name: Gin
-        qty: 45
-      - name: Maraschino
-        qty: 15
-      - name: Violet Cream
-        qty: 1 Bar Spoon
-      - name: Lemon Juice
-        qty: 15
+- name: Smoke On The Cynar
+  category:
+    en: Custom
+    fr: Créations
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Mezcal
+    qty: 40
+  - name:
+      en: Lemon Juice
+      fr: Jus de citron
+    qty: 25
+  - name:
+      en: Agave Syrup
+      fr: Sirop d'agave
+    qty: 10
+  - name:
+      en: Cynar
+    qty: 20
+  - name:
+      en: Orange Bitters
+      fr: Bitter Orange
+    qty: 1 dash
+- name: Mexican Dream
+  category:
+    en: Creation
+    fr: Créations
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Tequila
+    qty: 30
+  - name:
+      en: Mezcal
+    qty: 20
+  - name:
+      en: KWE
+    qty: 20
+  - name:
+      en: Ginger Beer
+    qty: 100
+- name: Between the sheets
+  category:
+    en: Rum
+    fr: Rhum
+  image: https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: White Rum
+      fr: Rhum blanc
+    qty: 30
+  - name:
+      en: Cognac
+    qty: 30
+  - name:
+      en: Triple Sec
+    qty: 30
+  - name:
+      en: Lemon Juice
+      fr: Jus de citron
+    qty: 20
+- name: Don Beachcomber
+  category:
+    en: Rum
+    fr: Rhum
+  image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: White Rum
+      fr: Rhum blanc
+    qty: 45
+  - name:
+      en: Triple Sec
+    qty: 20
+  - name:
+      en: Lime Juice
+      fr: Jus de citron vert
+    qty: 15
+  - name:
+      en: Maraschino
+      fr: Marasquin
+    qty: 5
+  - name:
+      en: Simple Syrup
+      fr: Sirop simple
+    qty: 5
+- name: Basil Smash
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Gin
+    qty: 45
+  - name:
+      en: Lime Juice
+      fr: Jus de citron vert
+    qty: 20
+  - name:
+      en: Simple Syrup
+      fr: Sirop simple
+    qty: 15
+  - name:
+      en: Green Basil
+      fr: Basilic vert
+    qty: 15 leaves
+- name: Jasmine
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Gin
+    qty: 50
+  - name:
+      en: Campari
+    qty: 10
+  - name:
+      en: Triple Sec
+    qty: 10
+  - name:
+      en: Lemon Juice
+      fr: Jus de citron
+    qty: 5
+  - name:
+      en: Simple Syrup
+      fr: Sirop simple
+    qty: 2 drops
+- name: Casino
+  image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Gin
+    qty: 40
+  - name:
+      en: Maraschino
+      fr: Marasquin
+    qty: 10
+  - name:
+      en: Orange Bitters
+      fr: Bitter Orange
+    qty: 2
+  - name:
+      en: Lemon Juice
+      fr: Jus de citron
+    qty: 10
+- name: Manhattan Island
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Cognac
+    qty: 60
+  - name:
+      en: Red Vermouth
+      fr: Vermouth rouge
+    qty: 30
+  - name:
+      en: Maraschino
+      fr: Marasquin
+    qty: 5
+  - name:
+      en: Angostura
+    qty: 3 dashes
+- name: Naked & Famous
+  category:
+    en: Miscs
+    fr: Divers
+  image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Mezcal
+    qty: 22.5
+  - name:
+      en: Yellow Chartreuse
+      fr: Chartreuse jaune
+    qty: 22.5
+  - name:
+      en: Aperol
+    qty: 22.5
+  - name:
+      en: Lime Juice
+      fr: Jus de citron vert
+    qty: 22.5
+- name: Oriental
+  category:
+    en: Whisky
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Rye Whiskey
+      fr: Whiskey de seigle
+    qty: 45
+  - name:
+      en: Red Vermouth
+      fr: Vermouth rouge
+    qty: 22.5
+  - name:
+      en: Triple Sec
+    qty: 22.5
+  - name:
+      en: Lime Juice
+      fr: Jus de citron vert
+    qty: 15
+- name: Whiskey Smash
+  category:
+    en: Whisky
+  image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Bourbon
+    qty: 45
+  - name:
+      en: Simple Syrup
+      fr: Sirop simple
+    qty: 25
+  - name:
+      en: Lemon Juice
+      fr: Jus de citron
+    qty: 25
+  - name:
+      en: Mint
+      fr: Menthe
+    qty: 3 leaves
+- name: Boulevardier
+  category:
+    en: Whisky
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Bourbon
+    qty: 45
+  - name:
+      en: Red Vermouth
+      fr: Vermouth rouge
+    qty: 30
+  - name:
+      en: Campari
+    qty: 30
+- name: Highlander
+  category:
+    en: Whisky
+  image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Scotch Whisky
+      fr: Whisky écossais
+    qty: 60
+  - name:
+      en: Red Vermouth
+      fr: Vermouth rouge
+    qty: 30
+  - name:
+      en: Orange Bitters
+      fr: Bitter Orange
+    qty: 1 dash
+- name: Manhattan
+  category:
+    en: Whisky
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Bourbon
+    qty: 50
+  - name:
+      en: Red Vermouth
+      fr: Vermouth rouge
+    qty: 25
+  - name:
+      en: Angostura
+    qty: 1 dash
+- name: Margarita
+  image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Tequila
+    qty: 50
+  - name:
+      en: Triple Sec
+    qty: 20
+  - name:
+      en: Lime Juice
+      fr: Jus de citron vert
+    qty: 20
+- name: Martinez
+  category:
+    en: Gin
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Gin
+    qty: 45
+  - name:
+      en: Red Vermouth
+      fr: Vermouth rouge
+    qty: 45
+  - name:
+      en: Maraschino
+      fr: Marasquin
+    qty: 1 bar spoon
+  - name:
+      en: Orange Bitters
+      fr: Bitter Orange
+    qty: 2
+- name: Mezcal Megroni
+  category:
+    en: Americanos
+  image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Mezcal
+    qty: 30
+  - name:
+      en: Red Vermouth
+      fr: Vermouth rouge
+    qty: 30
+  - name:
+      en: Campari
+    qty: 30
+- name: Negroni
+  category:
+    en: Americanos
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Gin
+    qty: 30
+  - name:
+      en: Red Vermouth
+      fr: Vermouth rouge
+    qty: 30
+  - name:
+      en: Campari
+    qty: 30
+- name: Negroni Sbagliato
+  category:
+    en: Americanos
+  image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Prosecco
+    qty: 60
+  - name:
+      en: Red Vermouth
+      fr: Vermouth rouge
+    qty: 30
+  - name:
+      en: Campari
+    qty: 30
+- name: Suffering Bastard
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Gin
+    qty: 30
+  - name:
+      en: Cognac
+    qty: 30
+  - name:
+      en: Lime Juice
+      fr: Jus de citron vert
+    qty: 15
+  - name:
+      en: Angostura
+    qty: 2 dashes
+  - name:
+      en: Ginger Beer
+    qty: Top Up
+- name: Moscow Mule
+  image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Vodka
+    qty: 45
+  - name:
+      en: Ginger Beer
+    qty: 120
+  - name:
+      en: Lime Juice
+      fr: Jus de citron vert
+    qty: 10
+- name: Balalaika
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Vodka
+    qty: 35
+  - name:
+      en: Triple Sec
+    qty: 25
+  - name:
+      en: Lime Juice
+      fr: Jus de citron vert
+    qty: 15
+  - name:
+      en: Water
+      fr: Eau
+    qty: 10
+- name: Bee's Knees
+  image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Gin
+    qty: 55
+  - name:
+      en: Honey Syrup
+      fr: Sirop de miel
+    qty: 2 teaspoon
+  - name:
+      en: Lemon Juice
+      fr: Jus de citron
+    qty: 22.5
+  - name:
+      en: Orange Juice
+      fr: Jus d'orange
+    qty: 22.5
+- name: Paloma
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Tequila
+    qty: 50
+  - name:
+      en: Grapefruit Soda
+      fr: Soda pamplemousse
+    qty: 100
+  - name:
+      en: Lime Juice
+      fr: Jus de citron vert
+    qty: 5
+  - name:
+      en: Salt
+      fr: Sel
+    qty: A pinch
+- name: Americano
+  category:
+    en: Americanos
+  image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Campari
+    qty: 30
+  - name:
+      en: Red Vermouth
+      fr: Vermouth rouge
+    qty: 30
+  - name:
+      en: Club Soda
+      fr: Eau gazeuse
+    qty: Spash
+- name: Whiskey sour
+  category:
+    en: Whisky
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Bourbon
+    qty: 50
+  - name:
+      en: Simple Syrup
+      fr: Sirop simple
+    qty: 20
+  - name:
+      en: Lemon Juice
+      fr: Jus de citron
+    qty: 20
+- name: Aperol Spritz
+  category:
+    en: Miscs
+    fr: Divers
+  image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Prosecco
+    qty: 100
+  - name:
+      en: Aperol
+    qty: 50
+  - name:
+      en: Angostura
+    qty: 2 dashes
+- name: Caipirihna
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Cachaça
+    qty: 60
+  - name:
+      en: Lime
+      fr: Citron vert
+    qty: 1
+  - name:
+      en: Sugar
+      fr: Sucre
+    qty: 4 teaspoons
+- name: Celtic Margarita
+  category:
+    en: Whisky
+  image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Scotch Whisky
+      fr: Whisky écossais
+    qty: 50
+  - name:
+      en: Triple Sec
+    qty: 20
+  - name:
+      en: Lime Juice
+      fr: Jus de citron vert
+    qty: 20
+- name: Daiquiri
+  category:
+    en: Rum
+    fr: Rhum
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: White Rum
+      fr: Rhum blanc
+    qty: 50
+  - name:
+      en: Simple Syrup
+      fr: Sirop simple
+    qty: 20
+  - name:
+      en: Lime Juice
+      fr: Jus de citron vert
+    qty: 20
+- name: Garibaldi
+  category:
+    en: Americanos
+  image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Campari
+    qty: 45
+  - name:
+      en: Simple Syrup
+      fr: Sirop simple
+    qty: 5
+  - name:
+      en: Orange Juice
+      fr: Jus d'orange
+    qty: On Top
+- name: Gimlet
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Gin
+    qty: 50
+  - name:
+      en: Lime Juice
+      fr: Jus de citron vert
+    qty: 25
+  - name:
+      en: Simple Syrup
+      fr: Sirop simple
+    qty: 15
+- name: Negroski
+  image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Vodka
+    qty: 35
+  - name:
+      en: Red Vermouth
+      fr: Vermouth rouge
+    qty: 30
+  - name:
+      en: Campari
+    qty: 25
+- name: Old Fashioned
+  category:
+    en: Whisky
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Bourbon
+    qty: 45
+  - name:
+      en: Sugar
+      fr: Sucre
+    qty: 1 cube
+  - name:
+      en: Angostura
+    qty: 2 dashes
+  - name:
+      en: Water
+      fr: Eau
+    qty: 1
+- name: Pink Gin
+  image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Gin
+    qty: 60
+  - name:
+      en: Simple Syrup
+      fr: Sirop simple
+    qty: 5
+  - name:
+      en: Angostura
+    qty: 4 dashes
+- name: Sidecar
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Cognac
+    qty: 50
+  - name:
+      en: Triple Sec
+    qty: 20
+  - name:
+      en: Lemon Juice
+      fr: Jus de citron
+    qty: 20
+- name: Aviation
+  image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Gin
+    qty: 45
+  - name:
+      en: Maraschino
+      fr: Marasquin
+    qty: 15
+  - name:
+      en: Violet Liqueur
+      fr: Liqueur de Violette
+    qty: 1 Bar Spoon
+  - name:
+      en: Lemon Juice
+      fr: Jus de citron
+    qty: 15
