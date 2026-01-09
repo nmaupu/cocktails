@@ -35,72 +35,113 @@
         .cocktail-list {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 12px;
         }
 
         .cocktail-card {
             background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            min-height: 80px;
         }
 
-        .cocktail-card:active {
+        .cocktail-card.disabled {
+            opacity: 0.5;
+            background: #f7fafc;
+            position: relative;
+        }
+
+        .cocktail-card.disabled::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(0, 0, 0, 0.03) 10px,
+                rgba(0, 0, 0, 0.03) 20px
+            );
+            border-radius: 12px;
+            pointer-events: none;
+        }
+
+        .cocktail-card:active:not(.disabled) {
             transform: scale(0.98);
         }
 
-        .cocktail-image {
-            width: 100%;
-            height: 250px;
-            object-fit: cover;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
         .cocktail-content {
-            padding: 20px;
+            flex: 1;
+            padding-right: 12px;
         }
 
         .cocktail-name {
-            font-size: 1.8rem;
+            font-size: 1.3rem;
             font-weight: 700;
             color: #2d3748;
-            margin-bottom: 15px;
+            margin-bottom: 6px;
+            line-height: 1.3;
         }
 
-        .ingredients-title {
-            font-size: 1rem;
+        .cocktail-card.disabled .cocktail-name {
+            color: #718096;
+        }
+
+        .unavailable-badge {
+            display: inline-block;
+            font-size: 0.7rem;
             font-weight: 600;
-            color: #4a5568;
-            margin-bottom: 12px;
+            color: #e53e3e;
+            background: #fed7d7;
+            padding: 2px 8px;
+            border-radius: 8px;
+            margin-left: 8px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .ingredients-list {
             list-style: none;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 0.85rem;
         }
 
         .ingredient-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 0.95rem;
-        }
-
-        .ingredient-item:last-child {
-            border-bottom: none;
-        }
-
-        .ingredient-name {
             color: #4a5568;
-            font-weight: 500;
+            font-weight: 400;
         }
 
-        .ingredient-qty {
-            color: #667eea;
-            font-weight: 600;
+        .cocktail-card.disabled .ingredient-item {
+            color: #a0aec0;
+        }
+
+        .ingredient-item:not(:last-child)::after {
+            content: "•";
+            margin-left: 8px;
+            color: #cbd5e0;
+        }
+
+        .cocktail-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            flex-shrink: 0;
+        }
+
+        .cocktail-card.disabled .cocktail-image {
+            filter: grayscale(100%);
+            opacity: 0.6;
         }
 
         .empty-state {
@@ -115,12 +156,18 @@
                 font-size: 2rem;
             }
 
-            .cocktail-image {
-                height: 200px;
+            .cocktail-name {
+                font-size: 1.2rem;
             }
 
-            .cocktail-name {
-                font-size: 1.5rem;
+            .cocktail-image {
+                width: 70px;
+                height: 70px;
+            }
+
+            .cocktail-card {
+                padding: 10px;
+                min-height: 70px;
             }
         }
     </style>
@@ -132,24 +179,25 @@
         {% if cocktails %}
         <div class="cocktail-list">
             {% for cocktail in cocktails %}
-            <div class="cocktail-card">
+            <div class="cocktail-card {% if not cocktail.get('enabled', True) %}disabled{% endif %}" data-cocktail-name="{{ cocktail.name }}">
+                <div class="cocktail-content">
+                    <h2 class="cocktail-name">
+                        {{ cocktail.name }}
+                        {% if not cocktail.get('enabled', True) %}
+                        <span class="unavailable-badge">Unavailable</span>
+                        {% endif %}
+                    </h2>
+                    <ul class="ingredients-list">
+                        {% for ingredient in cocktail.ingredients %}
+                        <li class="ingredient-item">{{ ingredient.name }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
                 {% if cocktail.image %}
                 <img src="{{ cocktail.image }}" alt="{{ cocktail.name }}" class="cocktail-image" loading="lazy">
                 {% else %}
                 <div class="cocktail-image"></div>
                 {% endif %}
-                <div class="cocktail-content">
-                    <h2 class="cocktail-name">{{ cocktail.name }}</h2>
-                    <div class="ingredients-title">Ingredients</div>
-                    <ul class="ingredients-list">
-                        {% for ingredient in cocktail.ingredients %}
-                        <li class="ingredient-item">
-                            <span class="ingredient-name">{{ ingredient.name }}</span>
-                            <span class="ingredient-qty">{{ ingredient.qty }}</span>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
             </div>
             {% endfor %}
         </div>
@@ -159,5 +207,73 @@
         </div>
         {% endif %}
     </div>
+
+    <script>
+        // Auto-refresh functionality
+        let currentState = {};
+        
+        // Initialize current state from the rendered page
+        document.querySelectorAll('.cocktail-card').forEach(card => {
+            const name = card.getAttribute('data-cocktail-name');
+            if (name) {
+                const isDisabled = card.classList.contains('disabled');
+                currentState[name] = !isDisabled;
+            }
+        });
+
+        async function checkForUpdates() {
+            try {
+                const response = await fetch('/api/state');
+                const newState = await response.json();
+                
+                // Check if state has changed
+                let hasChanges = false;
+                for (const [name, enabled] of Object.entries(newState)) {
+                    if (currentState[name] !== enabled) {
+                        hasChanges = true;
+                        break;
+                    }
+                }
+                
+                if (hasChanges) {
+                    // Update the page
+                    document.querySelectorAll('.cocktail-card').forEach(card => {
+                        const name = card.getAttribute('data-cocktail-name');
+                        if (name && newState.hasOwnProperty(name)) {
+                            const shouldBeEnabled = newState[name] !== false;
+                            const isCurrentlyDisabled = card.classList.contains('disabled');
+                            const nameElement = card.querySelector('.cocktail-name');
+                            
+                            if (shouldBeEnabled && isCurrentlyDisabled) {
+                                // Enable the cocktail
+                                card.classList.remove('disabled');
+                                const badge = nameElement.querySelector('.unavailable-badge');
+                                if (badge) {
+                                    badge.remove();
+                                }
+                            } else if (!shouldBeEnabled && !isCurrentlyDisabled) {
+                                // Disable the cocktail
+                                card.classList.add('disabled');
+                                if (!nameElement.querySelector('.unavailable-badge')) {
+                                    const badge = document.createElement('span');
+                                    badge.className = 'unavailable-badge';
+                                    badge.textContent = 'Unavailable';
+                                    nameElement.appendChild(badge);
+                                }
+                            }
+                        }
+                    });
+                    
+                    // Update current state
+                    currentState = newState;
+                }
+            } catch (error) {
+                console.error('Error checking for updates:', error);
+            }
+        }
+
+        // Check for updates every 2 seconds
+        setInterval(checkForUpdates, 2000);
+    </script>
 </body>
 </html>
