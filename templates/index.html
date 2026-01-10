@@ -449,11 +449,8 @@
       modalImage.style.display = 'none';
       document.getElementById('modalIngredientsList').innerHTML = '';
 
-      // Show modal
-      modal.classList.add('active');
-      document.body.style.overflow = 'hidden';
-
-      // Fetch cocktail details
+      // Don't show modal yet - wait for content to be ready
+      // Fetch cocktail details first
       fetch(`/api/cocktail/${encodeURIComponent(cocktailName)}`)
         .then(response => {
           if (!response.ok) {
@@ -464,15 +461,6 @@
         .then(data => {
           // Set title
           document.getElementById('modalTitle').textContent = data.name;
-
-          // Set image
-          if (data.image) {
-            modalImage.src = data.image;
-            modalImage.alt = data.name;
-            modalImage.style.display = 'block';
-          } else {
-            modalImage.style.display = 'none';
-          }
 
           // Set ingredients
           const ingredientsList = document.getElementById('modalIngredientsList');
@@ -489,11 +477,37 @@
             li.appendChild(qtySpan);
             ingredientsList.appendChild(li);
           });
+
+          // Load image and wait for it to be ready before showing modal
+          if (data.image) {
+            // Create a new image to preload
+            const img = new Image();
+            img.onload = function () {
+              // Image is loaded, now set it and show the modal
+              modalImage.src = data.image;
+              modalImage.alt = data.name;
+              modalImage.style.display = 'block';
+              // Show modal now that everything is ready
+              modal.classList.add('active');
+              document.body.style.overflow = 'hidden';
+            };
+            img.onerror = function () {
+              // Image failed to load, show modal anyway without image
+              modalImage.style.display = 'none';
+              modal.classList.add('active');
+              document.body.style.overflow = 'hidden';
+            };
+            img.src = data.image;
+          } else {
+            // No image, show modal immediately
+            modalImage.style.display = 'none';
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+          }
         })
         .catch(error => {
           console.error('Error fetching cocktail details:', error);
           alert('Error loading cocktail details');
-          closeModal();
         });
     }
 
