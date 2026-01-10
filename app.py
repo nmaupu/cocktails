@@ -7,7 +7,7 @@ A mobile-friendly web application to display available cocktails.
 import json
 import os
 import yaml
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, send_from_directory
 from functools import wraps
 from pathlib import Path
 
@@ -491,6 +491,48 @@ def set_language():
     
     session['lang'] = lang
     return jsonify({'success': True, 'lang': lang})
+
+
+@app.route('/images/<path:filename>')
+def serve_image(filename):
+    """Serve images from the images directory."""
+    images_dir = Path(__file__).parent / 'images'
+    return send_from_directory(images_dir, filename)
+
+
+@app.route('/api/cocktail/<cocktail_name>')
+def get_cocktail_detail(cocktail_name):
+    """Get detailed information about a specific cocktail."""
+    lang = session.get('lang', 'fr')
+    cocktails = load_cocktails(lang)
+    
+    # Find the cocktail by name
+    cocktail = next((c for c in cocktails if c['name'] == cocktail_name), None)
+    
+    if not cocktail:
+        return jsonify({'error': 'Cocktail not found'}), 404
+    
+    # Process image path - if it's a relative path, make it absolute
+    image_path = cocktail.get('image', '')
+    if image_path and not image_path.startswith('http') and not image_path.startswith('/'):
+        # It's a relative path, make it absolute
+        image_path = f'/images/{image_path}'
+    elif image_path and image_path.startswith('images/'):
+        # Handle images/ prefix
+        image_path = f'/{image_path}'
+    
+    # Return cocktail details with all ingredients (no filtering)
+    return jsonify({
+        'name': cocktail['name'],
+        'image': image_path,
+        'ingredients': [
+            {
+                'name': ingredient.get('display_name', ''),
+                'qty': ingredient.get('qty', '')
+            }
+            for ingredient in cocktail.get('ingredients', [])
+        ]
+    })
 
 
 if __name__ == '__main__':
