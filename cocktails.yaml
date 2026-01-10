@@ -1,74 +1,32 @@
+# Example cocktails configuration for local development
 cocktails:
-- name: Basil Smash
+- name: Example Negroni
+  category:
+    en: Example Americanos
   image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
   ingredients:
   - name:
       en: Gin
-    qty: 45
-  - name:
-      en: Lime Juice
-      fr: Jus de citron vert
-    qty: 20
-  - name:
-      en: Simple Syrup
-      fr: Sirop simple
-    qty: 15
-  - name:
-      en: Green Basil
-      fr: Basilic vert
-    qty: 15 leaves
-- name: Jasmine
-  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-  ingredients:
-  - name:
-      en: Gin
-    qty: 50
-  - name:
-      en: Campari
-    qty: 10
-  - name:
-      en: Triple Sec
-    qty: 10
-  - name:
-      en: Lemon Juice
-      fr: Jus de citron
-    qty: 5
-  - name:
-      en: Simple Syrup
-      fr: Sirop simple
-    qty: 2 drops
-- name: Casino
-  image: https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400&h=400&fit=crop
-  ingredients:
-  - name:
-      en: Gin
-    qty: 40
-  - name:
-      en: Maraschino
-      fr: Marasquin
-    qty: 10
-  - name:
-      en: Orange Bitters
-      fr: Bitter Orange
-    qty: 2
-  - name:
-      en: Lemon Juice
-      fr: Jus de citron
-    qty: 10
-- name: Manhattan Island
-  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
-  ingredients:
-  - name:
-      en: Cognac
-    qty: 60
+    qty: 30
   - name:
       en: Red Vermouth
       fr: Vermouth rouge
     qty: 30
   - name:
-      en: Maraschino
-      fr: Marasquin
-    qty: 5
+      en: Campari
+    qty: 30
+- name: Example Old Fashioned
+  category:
+    en: Example Whisky
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  ingredients:
+  - name:
+      en: Bourbon
+    qty: 45
+  - name:
+      en: Sugar
+      fr: Sucre
+    qty: 1 cube
   - name:
       en: Angostura
-    qty: 3 dashes
+    qty: 2 dashes
