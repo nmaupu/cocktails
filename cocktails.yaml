@@ -4,6 +4,7 @@ cocktails:
   category:
     en: Example Americanos
   image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  image: ./images/negroni.jpg
   ingredients:
   - name:
       en: Gin
@@ -19,6 +20,7 @@ cocktails:
   category:
     en: Example Whisky
   image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  image: ./images/garibaldi.jpg
   ingredients:
   - name:
       en: Bourbon

@@ -515,7 +515,14 @@ def get_cocktail_detail(cocktail_name):
     # Process image path - if it's a relative path, make it absolute
     image_path = cocktail.get('image', '')
     if image_path and not image_path.startswith('http') and not image_path.startswith('/'):
-        # It's a relative path, make it absolute
+        # It's a relative path, normalize it first
+        # Remove ./ prefix if present
+        if image_path.startswith('./'):
+            image_path = image_path[2:]
+        # Remove images/ prefix if present (we'll add /images/ ourselves)
+        if image_path.startswith('images/'):
+            image_path = image_path[7:]
+        # Make it absolute
         image_path = f'/images/{image_path}'
     elif image_path and image_path.startswith('images/'):
         # Handle images/ prefix
