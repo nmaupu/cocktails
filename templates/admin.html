@@ -509,8 +509,8 @@
                     } else {
                         item.classList.add('unavailable');
                     }
-                    // Reload page to update cocktail states
-                    window.location.reload();
+                    // Update cocktail states dynamically instead of reloading
+                    await updateCocktailStates();
                 } else {
                     alert('Error toggling ingredient: ' + (data.error || 'Unknown error'));
                     checkbox.checked = !checkbox.checked; // Revert checkbox
@@ -519,6 +519,59 @@
                 console.error('Error:', error);
                 alert('Failed to toggle ingredient. Please try again.');
                 checkbox.checked = !checkbox.checked; // Revert checkbox
+            }
+        }
+
+        async function updateCocktailStates() {
+            try {
+                // Fetch current state from server
+                const response = await fetch('/api/state');
+                const state = await response.json();
+                
+                // Update each cocktail card based on new state
+                document.querySelectorAll('.cocktail-card').forEach(card => {
+                    const cocktailName = card.getAttribute('data-name');
+                    const enabled = state[cocktailName] || false;
+                    const toggleElement = card.querySelector('.toggle-switch');
+                    const badge = card.querySelector('.status-badge');
+                    
+                    if (enabled) {
+                        toggleElement.classList.add('active');
+                        card.classList.remove('disabled');
+                        badge.textContent = 'Enabled';
+                        badge.className = 'status-badge status-enabled';
+                    } else {
+                        toggleElement.classList.remove('active');
+                        card.classList.add('disabled');
+                        badge.textContent = 'Disabled';
+                        badge.className = 'status-badge status-disabled';
+                    }
+                    
+                    // Update override badge - remove if cocktail is now auto-enabled/disabled
+                    const overrideBadge = card.querySelector('.override-badge');
+                    if (overrideBadge) {
+                        overrideBadge.remove();
+                    }
+                    card.classList.remove('override');
+                    
+                    // Update ingredient highlighting in cocktail
+                    card.querySelectorAll('.ingredient-in-cocktail').forEach(ingEl => {
+                        const ingredientText = ingEl.textContent.trim();
+                        // Find matching ingredient checkbox
+                        const ingredientItem = Array.from(document.querySelectorAll('.ingredient-item')).find(item => {
+                            const label = item.querySelector('.ingredient-label');
+                            return label && label.textContent.trim() === ingredientText;
+                        });
+                        
+                        if (ingredientItem && ingredientItem.classList.contains('unavailable')) {
+                            ingEl.classList.add('unavailable');
+                        } else {
+                            ingEl.classList.remove('unavailable');
+                        }
+                    });
+                });
+            } catch (error) {
+                console.error('Error updating cocktail states:', error);
             }
         }
 
@@ -583,6 +636,11 @@
 
         async function setLanguage(lang) {
             try {
+                // Show loading indicator
+                const originalOpacity = document.body.style.opacity;
+                document.body.style.opacity = '0.7';
+                document.body.style.pointerEvents = 'none';
+                
                 const response = await fetch('/api/set-language', {
                     method: 'POST',
                     headers: {
@@ -593,9 +651,14 @@
 
                 if (response.ok) {
                     window.location.reload();
+                } else {
+                    document.body.style.opacity = originalOpacity;
+                    document.body.style.pointerEvents = 'auto';
                 }
             } catch (error) {
                 console.error('Error setting language:', error);
+                document.body.style.opacity = '1';
+                document.body.style.pointerEvents = 'auto';
             }
         }
     </script>

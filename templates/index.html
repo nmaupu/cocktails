@@ -263,12 +263,34 @@
         }
 
         if (hasChanges) {
-          // Reload the page to show/hide cocktails
-          window.location.reload();
+          // Update current state
+          currentState = newState;
+          // Update DOM to show/hide cocktails
+          updateCocktailVisibility(newState);
         }
       } catch (error) {
         console.error('Error checking for updates:', error);
       }
+    }
+
+    function updateCocktailVisibility(state) {
+      // First, update all cocktail cards based on state
+      document.querySelectorAll('.cocktail-card').forEach(card => {
+        const name = card.getAttribute('data-cocktail-name');
+        if (name) {
+          const enabled = state[name] || false;
+          card.style.display = enabled ? '' : 'none';
+        }
+      });
+
+      // Then, update alcohol groups - show if they have any visible cocktails
+      document.querySelectorAll('.alcohol-group').forEach(group => {
+        const hasVisibleCocktail = Array.from(group.querySelectorAll('.cocktail-card')).some(card => {
+          const name = card.getAttribute('data-cocktail-name');
+          return name && (state[name] || false);
+        });
+        group.style.display = hasVisibleCocktail ? '' : 'none';
+      });
     }
 
     // Check for updates every 2 seconds
@@ -276,6 +298,11 @@
 
     async function setLanguage(lang) {
       try {
+        // Show loading indicator
+        const originalOpacity = document.body.style.opacity;
+        document.body.style.opacity = '0.7';
+        document.body.style.pointerEvents = 'none';
+
         const response = await fetch('/api/set-language', {
           method: 'POST',
           headers: {
@@ -286,9 +313,14 @@
 
         if (response.ok) {
           window.location.reload();
+        } else {
+          document.body.style.opacity = originalOpacity;
+          document.body.style.pointerEvents = 'auto';
         }
       } catch (error) {
         console.error('Error setting language:', error);
+        document.body.style.opacity = '1';
+        document.body.style.pointerEvents = 'auto';
       }
     }
   </script>
