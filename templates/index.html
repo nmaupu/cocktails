@@ -14,7 +14,7 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #f0e0d0 0%, #d4b29a 50%, #c19a7a 100%);
       min-height: 100vh;
       padding: 20px;
       color: #333;
@@ -40,35 +40,35 @@
       height: 32px;
       border-radius: 50%;
       cursor: pointer;
-      border: 2px solid rgba(255, 255, 255, 0.5);
+      border: 2px solid rgba(90, 69, 53, 0.5);
       transition: all 0.2s ease;
       opacity: 0.7;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 18px;
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(90, 69, 53, 0.2);
     }
 
     .lang-flag:hover {
       opacity: 1;
-      border-color: rgba(255, 255, 255, 0.9);
+      border-color: rgba(90, 69, 53, 0.8);
       transform: scale(1.1);
     }
 
     .lang-flag.active {
       opacity: 1;
-      border-color: white;
+      border-color: #5a4535;
       border-width: 3px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     h1 {
       text-align: center;
-      color: white;
+      color: #5a4535;
       font-size: 2.5rem;
       margin-bottom: 30px;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+      text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.6);
     }
 
     .cocktail-list {
@@ -132,14 +132,14 @@
       height: 80px;
       object-fit: cover;
       border-radius: 8px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #f0e0d0 0%, #d4b29a 50%, #c19a7a 100%);
       flex-shrink: 0;
     }
 
 
     .empty-state {
       text-align: center;
-      color: white;
+      color: #5a4535;
       padding: 40px 20px;
       font-size: 1.2rem;
     }
@@ -149,13 +149,13 @@
     }
 
     .alcohol-header {
-      color: white;
+      color: #5a4535;
       font-size: 1.5rem;
       font-weight: 700;
       margin-bottom: 15px;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+      text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.6);
       padding-bottom: 8px;
-      border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+      border-bottom: 2px solid rgba(90, 69, 53, 0.4);
     }
 
     .cocktail-card {
@@ -303,7 +303,7 @@
       aspect-ratio: 1 / 1;
       overflow: hidden;
       border-radius: 16px 16px 0 0;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #f0e0d0 0%, #d4b29a 50%, #c19a7a 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -569,7 +569,19 @@
             nameSpan.textContent = ingredient.name;
             const qtySpan = document.createElement('span');
             qtySpan.className = 'modal-ingredient-qty';
-            qtySpan.textContent = ingredient.qty || '';
+            // Format quantity: if it's a pure number, add "ml" unit
+            let qtyText = ingredient.qty || '';
+            if (qtyText) {
+              // Check if quantity is a pure number (integer or float)
+              const qtyStr = String(qtyText).trim();
+              // Try to parse as number
+              const qtyNum = parseFloat(qtyStr);
+              // If it's a valid number and the string representation matches (no extra text), add "ml"
+              if (!isNaN(qtyNum) && String(qtyNum) === qtyStr) {
+                qtyText = qtyText + ' ml';
+              }
+            }
+            qtySpan.textContent = qtyText;
             li.appendChild(nameSpan);
             li.appendChild(qtySpan);
             ingredientsList.appendChild(li);
