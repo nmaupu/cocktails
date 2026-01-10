@@ -381,7 +381,12 @@ def get_state():
     """Get the current enabled/disabled state of all cocktails."""
     lang = session.get('lang', 'fr')
     cocktails = load_cocktails(lang)
-    state = {c['name']: c.get('enabled', True) for c in cocktails}
+    state = {}
+    for c in cocktails:
+        state[c['name']] = {
+            'enabled': c.get('enabled', True),
+            'is_override': c.get('is_override', False)
+        }
     return jsonify(state)
 
 
@@ -477,6 +482,79 @@ def toggle_cocktail():
         'success': True,
         'enabled': not current_enabled,
         'is_override': True
+    })
+
+
+@app.route('/api/toggle-category', methods=['POST'])
+@login_required
+def toggle_category():
+    """Toggle all cocktails in a specific category (enable if all disabled, disable if any enabled)."""
+    data = request.get_json()
+    category_name = data.get('category')
+
+    if not category_name:
+        return jsonify({'error': 'Category name is required'}), 400
+
+    # Load cocktails and current state
+    with open(COCKTAILS_FILE, 'r', encoding='utf-8') as f:
+        yaml_data = yaml.safe_load(f)
+    cocktails = yaml_data.get('cocktails', [])
+    
+    ingredients_state = load_ingredients_state()
+    cocktail_overrides = load_cocktail_overrides()
+    
+    # Get language from session
+    lang = session.get('lang', 'fr')
+    
+    # Find all cocktails in this category and check their current state
+    cocktails_in_category = []
+    enabled_count = 0
+    for cocktail in cocktails:
+        main_alcohol = get_main_alcohol(cocktail, lang=lang)
+        if main_alcohol == category_name:
+            cocktail_name = cocktail['name']
+            cocktails_in_category.append(cocktail_name)
+            # Check if this cocktail is currently enabled
+            enabled = compute_cocktail_enabled(cocktail, ingredients_state, cocktail_overrides)
+            if enabled:
+                enabled_count += 1
+    
+    if not cocktails_in_category:
+        return jsonify({'error': 'No cocktails found in this category'}), 404
+    
+    # Determine action: if all are disabled, enable them; otherwise disable all
+    should_enable = enabled_count == 0
+    
+    # Toggle all cocktails in this category
+    for cocktail_name in cocktails_in_category:
+        cocktail_overrides[cocktail_name] = should_enable
+    
+    # Save the updated overrides
+    save_cocktail_overrides(cocktail_overrides)
+    
+    return jsonify({
+        'success': True,
+        'enabled': should_enable,
+        'count': len(cocktails_in_category)
+    })
+
+
+@app.route('/api/reset-all', methods=['POST'])
+@login_required
+def reset_all():
+    """Reset all: clear all overrides and reactivate all ingredients and cocktails."""
+    # Clear all cocktail overrides
+    cocktail_overrides = {}
+    save_cocktail_overrides(cocktail_overrides)
+    
+    # Reset all ingredient states (all available by default)
+    # Delete the file instead of saving empty dict to ensure clean state
+    if INGREDIENTS_STATE_FILE.exists():
+        INGREDIENTS_STATE_FILE.unlink()
+    
+    return jsonify({
+        'success': True,
+        'message': 'All overrides have been cleared and all ingredients reactivated'
     })
 
 

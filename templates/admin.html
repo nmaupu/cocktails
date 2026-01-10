@@ -346,6 +346,60 @@
             text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.6);
             padding-bottom: 8px;
             border-bottom: 2px solid rgba(90, 69, 53, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .alcohol-header-text {
+            flex: 1;
+        }
+
+        .category-button {
+            padding: 6px 12px;
+            background: rgba(90, 69, 53, 0.2);
+            color: #5a4535;
+            border: 2px solid rgba(90, 69, 53, 0.4);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .category-button:hover {
+            background: rgba(90, 69, 53, 0.3);
+            border-color: rgba(90, 69, 53, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .category-button:active {
+            transform: translateY(0);
+        }
+
+
+        .reset-button {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #c19a7a 0%, #b8956a 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .reset-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .reset-button:active {
+            transform: translateY(0);
         }
 
         @media (max-width: 480px) {
@@ -400,6 +454,18 @@
                 width: 100%;
                 justify-content: space-between;
             }
+
+            .alcohol-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .category-button {
+                width: 100%;
+                font-size: 0.8rem;
+                padding: 8px 12px;
+            }
         }
     </style>
 </head>
@@ -420,6 +486,9 @@
 
         <h2>Ingredients</h2>
         <div class="ingredients-section">
+            <div style="margin-bottom: 16px; text-align: center;">
+                <button class="reset-button" onclick="resetAll()">🔄 Reset All</button>
+            </div>
             <div class="ingredients-grid">
                 {% for ingredient in ingredients %}
                 {% if ingredient.lower() not in hidden_ingredients %}
@@ -439,8 +508,11 @@
         <h2>Cocktails</h2>
         {% if grouped_cocktails %}
             {% for alcohol, cocktails in grouped_cocktails %}
-            <div class="alcohol-group">
-                <h3 class="alcohol-header">{{ alcohol }}</h3>
+            <div class="alcohol-group" data-category="{{ alcohol }}">
+                <h3 class="alcohol-header">
+                    <span class="alcohol-header-text">{{ alcohol }}</span>
+                    <button class="category-button" data-category="{{ alcohol }}" onclick="toggleCategory('{{ alcohol }}', this)">Toggle catégorie</button>
+                </h3>
                 <div class="cocktail-list">
                     {% for cocktail in cocktails %}
             <div class="cocktail-card {% if not cocktail.get('enabled', True) %}disabled{% endif %} {% if cocktail.get('is_override') %}override{% endif %}"
@@ -531,7 +603,14 @@
                 // Update each cocktail card based on new state
                 document.querySelectorAll('.cocktail-card').forEach(card => {
                     const cocktailName = card.getAttribute('data-name');
-                    const enabled = state[cocktailName] || false;
+                    const cocktailState = state[cocktailName];
+                    
+                    if (!cocktailState) {
+                        return; // Skip if cocktail not found in state
+                    }
+                    
+                    const enabled = cocktailState.enabled || false;
+                    const isOverride = cocktailState.is_override || false;
                     const toggleElement = card.querySelector('.toggle-switch');
                     const badge = card.querySelector('.status-badge');
                     
@@ -547,12 +626,22 @@
                         badge.className = 'status-badge status-disabled';
                     }
                     
-                    // Update override badge - remove if cocktail is now auto-enabled/disabled
-                    const overrideBadge = card.querySelector('.override-badge');
-                    if (overrideBadge) {
-                        overrideBadge.remove();
+                    // Update override badge
+                    let overrideBadge = card.querySelector('.override-badge');
+                    if (isOverride) {
+                        card.classList.add('override');
+                        if (!overrideBadge) {
+                            overrideBadge = document.createElement('span');
+                            overrideBadge.className = 'override-badge';
+                            overrideBadge.textContent = 'Manual Override';
+                            toggleElement.parentElement.appendChild(overrideBadge);
+                        }
+                    } else {
+                        card.classList.remove('override');
+                        if (overrideBadge) {
+                            overrideBadge.remove();
+                        }
                     }
-                    card.classList.remove('override');
                     
                     // Update ingredient highlighting in cocktail
                     card.querySelectorAll('.ingredient-in-cocktail').forEach(ingEl => {
@@ -570,6 +659,9 @@
                         }
                     });
                 });
+                
+                // Update category buttons after updating cocktail states
+                updateCategoryButtons();
             } catch (error) {
                 console.error('Error updating cocktail states:', error);
             }
@@ -661,6 +753,101 @@
                 document.body.style.pointerEvents = 'auto';
             }
         }
+
+        async function toggleCategory(categoryName, buttonElement) {
+            try {
+                const response = await fetch('/api/toggle-category', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ category: categoryName })
+                });
+
+                if (response.status === 401) {
+                    alert('Session expired. Please login again.');
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Update cocktail states dynamically
+                    await updateCocktailStates();
+                    // Update button text based on new state
+                    updateCategoryButton(categoryName, data.enabled);
+                } else {
+                    alert('Error toggling category: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to toggle category. Please try again.');
+            }
+        }
+
+        function updateCategoryButton(categoryName, enabled) {
+            const button = document.querySelector(`.category-button[data-category="${categoryName}"]`);
+            if (button) {
+                button.textContent = enabled ? 'Désactiver catégorie' : 'Activer catégorie';
+            }
+        }
+
+        function updateCategoryButtons() {
+            // Update all category buttons based on current state
+            document.querySelectorAll('.alcohol-group').forEach(group => {
+                const categoryName = group.getAttribute('data-category');
+                if (!categoryName) return;
+
+                const cocktails = group.querySelectorAll('.cocktail-card');
+                let enabledCount = 0;
+                cocktails.forEach(card => {
+                    if (!card.classList.contains('disabled')) {
+                        enabledCount++;
+                    }
+                });
+
+                const button = group.querySelector('.category-button');
+                if (button) {
+                    const allDisabled = enabledCount === 0;
+                    button.textContent = allDisabled ? 'Activer catégorie' : 'Désactiver catégorie';
+                }
+            });
+        }
+
+        async function resetAll() {
+            try {
+                const response = await fetch('/api/reset-all', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                if (response.status === 401) {
+                    alert('Session expired. Please login again.');
+                    window.location.href = '/login';
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Reload the page to reflect all changes (force reload to avoid cache)
+                    window.location.href = window.location.href.split('?')[0] + '?reset=' + Date.now();
+                } else {
+                    alert('Error resetting: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to reset. Please try again.');
+            }
+        }
+
+        // Initialize category buttons on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCategoryButtons();
+        });
     </script>
 </body>
 </html>

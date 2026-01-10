@@ -450,6 +450,9 @@
     </div>
     <h1>🍹 Cocktails Menu</h1>
 
+    <div class="empty-state" id="emptyState" style="display: none;">
+      <p>No cocktails available at the moment.</p>
+    </div>
     {% if grouped_cocktails %}
     {% for alcohol, cocktails in grouped_cocktails %}
     <div class="alcohol-group">
@@ -477,10 +480,6 @@
       </div>
     </div>
     {% endfor %}
-    {% else %}
-    <div class="empty-state">
-      <p>No cocktails available at the moment.</p>
-    </div>
     {% endif %}
   </div>
 
@@ -685,6 +684,32 @@
 
       // Load ordered cocktails on page load
       loadOrderedCocktails();
+      
+      // Initialize empty state visibility by checking current state
+      async function initializeEmptyState() {
+        try {
+          const response = await fetch('/api/state');
+          const state = await response.json();
+          
+          // Extract enabled status
+          const enabledState = {};
+          for (const [name, stateData] of Object.entries(state)) {
+            enabledState[name] = typeof stateData === 'boolean' ? stateData : (stateData.enabled || false);
+          }
+          
+          // Check if any cocktail is enabled
+          const hasVisibleCocktails = Object.values(enabledState).some(enabled => enabled === true);
+          
+          const emptyState = document.getElementById('emptyState');
+          if (emptyState) {
+            emptyState.style.display = hasVisibleCocktails ? 'none' : 'block';
+          }
+        } catch (error) {
+          console.error('Error initializing empty state:', error);
+        }
+      }
+      
+      initializeEmptyState();
     });
 
     async function checkForUpdates() {
@@ -694,7 +719,9 @@
 
         // Check if state has changed
         let hasChanges = false;
-        for (const [name, enabled] of Object.entries(newState)) {
+        for (const [name, stateData] of Object.entries(newState)) {
+          // Handle both old format (boolean) and new format (object with enabled/is_override)
+          const enabled = typeof stateData === 'boolean' ? stateData : (stateData.enabled || false);
           if (currentState[name] !== enabled) {
             hasChanges = true;
             break;
@@ -702,10 +729,14 @@
         }
 
         if (hasChanges) {
-          // Update current state
-          currentState = newState;
+          // Update current state (extract enabled status)
+          const enabledState = {};
+          for (const [name, stateData] of Object.entries(newState)) {
+            enabledState[name] = typeof stateData === 'boolean' ? stateData : (stateData.enabled || false);
+          }
+          currentState = enabledState;
           // Update DOM to show/hide cocktails
-          updateCocktailVisibility(newState);
+          updateCocktailVisibility(enabledState);
           // Reload ordered cocktails list to stay in sync
           loadOrderedCocktails();
         }
@@ -716,11 +747,15 @@
 
     function updateCocktailVisibility(state) {
       // First, update all cocktail cards based on state
+      let hasVisibleCocktails = false;
       document.querySelectorAll('.cocktail-card').forEach(card => {
         const name = card.getAttribute('data-cocktail-name');
         if (name) {
           const enabled = state[name] || false;
           card.style.display = enabled ? '' : 'none';
+          if (enabled) {
+            hasVisibleCocktails = true;
+          }
         }
       });
 
@@ -731,7 +766,16 @@
           return name && (state[name] || false);
         });
         group.style.display = hasVisibleCocktail ? '' : 'none';
+        if (hasVisibleCocktail) {
+          hasVisibleCocktails = true;
+        }
       });
+
+      // Show/hide empty state message
+      const emptyState = document.getElementById('emptyState');
+      if (emptyState) {
+        emptyState.style.display = hasVisibleCocktails ? 'none' : 'block';
+      }
     }
 
     // Check for updates every 2 seconds
