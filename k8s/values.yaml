@@ -1,0 +1,8 @@
+# Additional values for cocktails app configuration
+# This file is merged with the main values.yaml from the auto-home repository
+
+# ConfigMap containing cocktail recipes data
+configmap:
+  cocktails-data:
+    enabled: true
+    namespace: cocktails

@@ -15,8 +15,9 @@ app = Flask(__name__)
 # Secret key for sessions (use environment variable in production)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 
-# Path to the cocktails YAML file (read-only, committed to git)
-COCKTAILS_FILE = Path(__file__).parent / 'cocktails.yaml'
+# Path to the cocktails YAML file (configurable via environment variable)
+# Defaults to bundled file for local development, or external config in Kubernetes
+COCKTAILS_FILE = Path(os.environ.get('COCKTAILS_FILE_PATH', Path(__file__).parent / 'cocktails.yaml'))
 # Directory for state files (writable, not committed to git)
 # Defaults to /data for Kubernetes PVC, falls back to app directory for local development
 STATE_DIR = Path(os.environ.get('STATE_DIR', '/data' if Path('/data').exists() else Path(__file__).parent))

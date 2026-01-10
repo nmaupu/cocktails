@@ -13,6 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application files
 COPY app.py .
 COPY templates/ ./templates/
+# Copy cocktails.yaml for local development (in production, this comes from ConfigMap)
 COPY cocktails.yaml .
 
 # Create directory for state files (will be mounted as volume in Kubernetes)
