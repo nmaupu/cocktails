@@ -240,6 +240,64 @@
       background: rgba(0, 0, 0, 0.7);
     }
 
+    .modal-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.95);
+      color: #2d3748;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      width: 56px;
+      height: 56px;
+      font-size: 36px;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      transition: all 0.2s ease;
+      user-select: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      padding: 0;
+      margin: 0;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .modal-nav span {
+      display: inline-block;
+      transform: translateY(-1px);
+    }
+
+    .modal-nav:hover {
+      background: white;
+      transform: translateY(-50%) scale(1.15);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-nav:active {
+      transform: translateY(-50%) scale(1.05);
+    }
+
+    .modal-nav-prev {
+      left: 16px;
+      padding-right: 1px;
+    }
+
+    .modal-nav-next {
+      right: 16px;
+      padding-left: 1px;
+    }
+
+    .modal-nav:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+      background: rgba(255, 255, 255, 0.6);
+    }
+
     .modal-image-container {
       width: 100%;
       aspect-ratio: 1 / 1;
@@ -249,6 +307,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
     }
 
     .modal-image {
@@ -363,6 +422,20 @@
         height: 32px;
         font-size: 18px;
       }
+
+      .modal-nav {
+        width: 48px;
+        height: 48px;
+        font-size: 28px;
+      }
+
+      .modal-nav-prev {
+        left: 12px;
+      }
+
+      .modal-nav-next {
+        right: 12px;
+      }
     }
   </style>
 </head>
@@ -416,6 +489,10 @@
     <div class="modal-content">
       <button class="modal-close" onclick="closeModal()" aria-label="Close">×</button>
       <div class="modal-image-container" id="modalImageContainer">
+        <button class="modal-nav modal-nav-prev" onclick="navigateCocktail(-1)"
+          aria-label="Previous cocktail"><span>‹</span></button>
+        <button class="modal-nav modal-nav-next" onclick="navigateCocktail(1)"
+          aria-label="Next cocktail"><span>›</span></button>
         <img id="modalImage" class="modal-image" src="" alt="" style="display: none;">
       </div>
       <div class="modal-body">
@@ -429,6 +506,9 @@
   <script>
     // Auto-refresh functionality
     let currentState = {};
+    // Navigation state
+    let orderedCocktails = [];
+    let currentCocktailIndex = -1;
 
     // Initialize current state from the rendered page
     document.querySelectorAll('.cocktail-card').forEach(card => {
@@ -438,8 +518,25 @@
       }
     });
 
+    // Load ordered cocktail list
+    async function loadOrderedCocktails() {
+      try {
+        const response = await fetch('/api/cocktails/ordered');
+        orderedCocktails = await response.json();
+      } catch (error) {
+        console.error('Error loading ordered cocktails:', error);
+        // Fallback: build list from DOM
+        orderedCocktails = Array.from(document.querySelectorAll('.cocktail-card'))
+          .map(card => card.getAttribute('data-cocktail-name'))
+          .filter(name => name);
+      }
+    }
+
     // Cocktail detail modal functionality
     function openModal(cocktailName) {
+      // Find the index of the current cocktail
+      currentCocktailIndex = orderedCocktails.indexOf(cocktailName);
+      updateNavigationButtons();
       const modal = document.getElementById('cocktailModal');
 
       // Clear previous content immediately
@@ -515,6 +612,29 @@
       const modal = document.getElementById('cocktailModal');
       modal.classList.remove('active');
       document.body.style.overflow = '';
+      currentCocktailIndex = -1;
+    }
+
+    function navigateCocktail(direction) {
+      if (currentCocktailIndex === -1 || orderedCocktails.length === 0) {
+        return;
+      }
+
+      const newIndex = currentCocktailIndex + direction;
+      if (newIndex >= 0 && newIndex < orderedCocktails.length) {
+        const nextCocktailName = orderedCocktails[newIndex];
+        openModal(nextCocktailName);
+      }
+    }
+
+    function updateNavigationButtons() {
+      const prevButton = document.querySelector('.modal-nav-prev');
+      const nextButton = document.querySelector('.modal-nav-next');
+
+      if (prevButton && nextButton) {
+        prevButton.disabled = currentCocktailIndex <= 0;
+        nextButton.disabled = currentCocktailIndex >= orderedCocktails.length - 1;
+      }
     }
 
     // Add click handlers to cocktail cards
@@ -535,12 +655,24 @@
         }
       });
 
-      // Close modal on Escape key
+      // Close modal on Escape key, navigate with arrow keys
       document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-          closeModal();
+        const modal = document.getElementById('cocktailModal');
+        if (modal.classList.contains('active')) {
+          if (e.key === 'Escape') {
+            closeModal();
+          } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            navigateCocktail(-1);
+          } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            navigateCocktail(1);
+          }
         }
       });
+
+      // Load ordered cocktails on page load
+      loadOrderedCocktails();
     });
 
     async function checkForUpdates() {
@@ -562,6 +694,8 @@
           currentState = newState;
           // Update DOM to show/hide cocktails
           updateCocktailVisibility(newState);
+          // Reload ordered cocktails list to stay in sync
+          loadOrderedCocktails();
         }
       } catch (error) {
         console.error('Error checking for updates:', error);

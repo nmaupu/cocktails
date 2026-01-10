@@ -32,3 +32,35 @@ cocktails:
   - name:
       en: Angostura
     qty: 2 dashes
+- name: Aaaaa
+  category:
+    en: Example Americanos
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  image: ./images/negroni.jpg
+  ingredients:
+  - name:
+      en: Gin
+    qty: 30
+  - name:
+      en: Red Vermouth
+      fr: Vermouth rouge
+    qty: 30
+  - name:
+      en: Campari
+    qty: 30
+- name: BBBBBBB
+  category:
+    en: Example Whisky
+  image: https://images.unsplash.com/photo-1551538827-9c037cb4f32a?w=400&h=400&fit=crop
+  image: ./images/garibaldi.jpg
+  ingredients:
+  - name:
+      en: Bourbon
+    qty: 45
+  - name:
+      en: Sugar
+      fr: Sucre
+    qty: 1 cube
+  - name:
+      en: Angostura
+    qty: 2 dashes

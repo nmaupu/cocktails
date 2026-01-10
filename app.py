@@ -500,6 +500,22 @@ def serve_image(filename):
     return send_from_directory(images_dir, filename)
 
 
+@app.route('/api/cocktails/ordered')
+def get_ordered_cocktails():
+    """Get ordered list of enabled cocktail names (in display order)."""
+    lang = session.get('lang', 'fr')
+    cocktails = load_cocktails(lang)
+    # Filter to show only enabled cocktails
+    enabled_cocktails = [c for c in cocktails if c.get('enabled', True)]
+    # Group cocktails by main alcohol (same logic as index page)
+    grouped_cocktails = group_cocktails_by_alcohol(enabled_cocktails, lang=lang)
+    # Flatten to get ordered list of names
+    ordered_names = []
+    for alcohol, cocktail_list in grouped_cocktails:
+        ordered_names.extend([c['name'] for c in cocktail_list])
+    return jsonify(ordered_names)
+
+
 @app.route('/api/cocktail/<cocktail_name>')
 def get_cocktail_detail(cocktail_name):
     """Get detailed information about a specific cocktail."""
